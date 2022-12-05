@@ -2,9 +2,11 @@
 # Soduko Solver #
 #################
 
-# Amos Hodges
+## Amos Hodges ##
 
+# functions for validating a given entry and solving the board
 
+# test board
 # each list represents horizontal row
 # 0 represents empty space
 sample_board = [
@@ -18,6 +20,13 @@ sample_board = [
     [1, 2, 0, 0, 0, 7, 4, 0, 0],
     [0, 4, 9, 2, 0, 6, 0, 0, 7]
 ]
+
+
+### solve function ###
+# uses find funtion to seek the next empty space
+# iterates 1-9 at the empty space and goes with the first valid option
+# recursively calls itself progressing through the board
+# when an option is invalid, it resets the spot to 0 (empty) and backtracks to the previous correct position
 
 
 def solve_board(board):
@@ -43,7 +52,7 @@ def solve_board(board):
     return False
 
 
-# check if valid entry
+### check if valid entry ###
 # check if the number entered at the given position is valid on the current board
 
 
@@ -88,6 +97,9 @@ def check_valid(board, num, pos):
 
     return True
 
+### display the arrray as sudoku board ###
+# print board array in and orgnaized grid for testing functionality #
+
 
 def print_board(board):
 
@@ -107,9 +119,8 @@ def print_board(board):
                 print(str(board[i][j]) + " ", end="")
 
 
-# find next empty space
+### find next empty space ###
 # iterates over current board and returns the position of the next available empty space
-
 
 def find_empty(board):
     for i in range(len(board)):
@@ -119,7 +130,8 @@ def find_empty(board):
     return None
 
 
-print_board(sample_board)
-solve_board(sample_board)
-print("-----------------------------")
-print_board(sample_board)
+# test functionality of solve
+# print_board(sample_board)
+# solve_board(sample_board)
+# print("-----------------------------")
+# print_board(sample_board)
