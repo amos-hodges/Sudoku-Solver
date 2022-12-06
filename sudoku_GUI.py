@@ -7,7 +7,7 @@
 # GUI created using validate and solve functions
 
 import pygame
-from sudoku_solver import check_valid, solve_board
+from sudoku_solver import check_valid, solve_board, print_board
 import time
 pygame.font.init()
 
@@ -69,7 +69,7 @@ class Grid:
         # if a square is empty, use the selected position to update the value
         # check if the move is valid and if it is in the correct solved solution
         row, col = self.selected
-        if self.squares[row][col] == 0:
+        if self.squares[row][col].value == 0:
             self.squares[row][col].set(val)
             self.update_model()
 
@@ -84,37 +84,53 @@ class Grid:
 
     def temp_guess(self, val):
         row, col = self.selected
-        self.squares[row][col].set(val)
+        self.squares[row][col].set_temp(val)
 
     def select(self, row, col):
         # reset any previously selected squares
-        # set the current square to selected
-        # set the self.selected attibute to (row, col) of selected square
-        pass
+        for i in range(self.rows):
+            for j in range(self.cols):
+                self.squares[i][j].selected = False
+
+        self.squares[row][col].selected = True
+        self.selected = (row, col)
 
     # used for delete key to remove an entry
 
     def clear(self):
-        # set (row, col) to self.selected coords
-        # if the current square is empty (0), set the temp value to 0 also
-        pass
 
-    # pygame.mouse.get_pos() returns coordinates relative to the top left corner of the display
-    # using the position return the coodnates relative to the game display
+        row, col = self.selected
+        if self.squares[row][col].value == 0:
+            self.squares[row][col].set_temp(0)
+
     def click(self, pos):
+        # pygame.mouse.get_pos() returns coordinates relative to the top left corner of the display
+        # pos[0] = x_coord, pos[1] = y_coord
 
-        pass
-    # check if there are any empty spaces (0's) left on the board
+        # only return a value when click is within the game display
+        if pos[0] < self.width and pos[1] < self.height:
+            # divide the board into squares
+            gap = self.width / 9
+            x = pos[0] // gap
+            y = pos[1] // gap
+            return (int(x), int(y))
+        else:
+            return None
 
     def is_finished(self):
-        pass
+        # check if there are any empty spaces (0's) left on the board
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if self.squares[i][j].value == 0:
+                    return False
+        return True
 
     def draw(self, win):
-        win.fill((255, 255, 255))
+        #win.fill((255, 255, 255))
         # variable to adjust for different size board
         gap = self.width / 9
         for i in range(self.rows+1):
-            if i % 3 == 0:
+            if i % 3 == 0 and i != 0:
                 thickness = 4
             else:
                 thickness = 1
@@ -168,7 +184,7 @@ class Square:
                      y + (gap/2 - txt.get_height()/2)))
 
         if self.selected:
-            pygame.draw.rect(win, (0, 0, 0), (x, y, gap, gap), 3)
+            pygame.draw.rect(win, (0, 255, 0), (x, y, gap, gap), 3)
 
     def set(self, val):
         self.value = val
@@ -189,16 +205,64 @@ def main():
 
     while run:
 
-        # timeout for testing purposes
         play_time = round(time.time()-start)
 
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    key = 1
+                if event.key == pygame.K_2:
+                    key = 2
+                if event.key == pygame.K_3:
+                    key = 3
+                if event.key == pygame.K_4:
+                    key = 4
+                if event.key == pygame.K_5:
+                    key = 5
+                if event.key == pygame.K_6:
+                    key = 6
+                if event.key == pygame.K_7:
+                    key = 7
+                if event.key == pygame.K_8:
+                    key = 8
+                if event.key == pygame.K_9:
+                    key = 9
+                if event.key == pygame.K_DELETE:
+                    board.clear()
+                    key = None
+                if event.key == pygame.K_RETURN:
+                    i, j = board.selected
+                    if board.squares[i][j].temp != 0:
+                        if board.place(board.squares[i][j].temp):
+                            print('Correct move')
+                        else:
+                            print('Not correct')
+                        key = None
+
+                        if board.is_finished():
+                            run = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                clicked = board.click(pos)
+                if clicked:
+                    board.select(clicked[0], clicked[1])
+                    key = None
+
+        if board.selected and key != None:
+            board.temp_guess(key)
+
+        window.fill((255, 255, 255))
         board.draw(window)
+
         #redraw_window(window, board)
+
         pygame.display.update()
-        if play_time > 6:
-            run = False
+    print('Play time: ' + str(play_time) + ' seconds')
 
 
-if __name__ == '__main__':
-    main()
-    pygame.quit()
+main()
+pygame.quit()
