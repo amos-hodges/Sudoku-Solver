@@ -126,7 +126,7 @@ class Grid:
         return True
 
     def draw(self, win):
-        #win.fill((255, 255, 255))
+
         # variable to adjust for different size board
         gap = self.width / 9
         for i in range(self.rows+1):
@@ -141,15 +141,12 @@ class Grid:
                              (i*gap, self.height), thickness)
 
             # draw squares
-            for i in range(self.rows):
-                for j in range(self.cols):
-                    self.squares[i][j].draw(win)
+        for i in range(self.rows):
+            for j in range(self.cols):
+                self.squares[i][j].draw(win)
 
 
 class Square:
-
-    rows = 9
-    cols = 9
 
     def __init__(self, value, row, col, width, height):
 
@@ -193,6 +190,11 @@ class Square:
         self.temp = val
 
 
+def draw_window(win, board):
+    win.fill((255, 255, 255))
+    board.draw(win)
+
+
 def main():
 
     # change height to accomodate options menu
@@ -208,7 +210,6 @@ def main():
         play_time = round(time.time()-start)
 
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.KEYDOWN:
@@ -255,8 +256,7 @@ def main():
         if board.selected and key != None:
             board.temp_guess(key)
 
-        window.fill((255, 255, 255))
-        board.draw(window)
+        draw_window(window, board)
 
         #redraw_window(window, board)
 
