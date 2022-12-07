@@ -7,9 +7,9 @@
 # GUI created using validate and solve functions
 
 import pygame
-from sudoku_solver import check_valid, solve_board, print_board
+from sudoku_solver import check_valid, solve_board
 import time
-pygame.font.init()
+pygame.init()
 
 # End goal:
 
@@ -190,78 +190,184 @@ class Square:
         self.temp = val
 
 
-def draw_window(win, board):
-    win.fill((255, 255, 255))
-    board.draw(win)
+class Game():
+
+    def __init__(self):
+        pygame.init()
+        pygame.display.set_caption("Sudoku Solver")
+
+        # state of program
+        self.running = True
+        # state of game (solver or play)
+
+        # game colors
+        self.black, self.white, self.grey, self.dark_grey = (
+            0, 0, 0), (255, 255, 255), (128, 128, 128), (80, 80, 80)
+        self.playing = False
+        self.key = None
+        self.display_width = 540
+        self.display_height = 600
+        self.board = Grid(9, 9, self.display_width, self.display_height)
+        self.display = pygame.Surface(
+            (self.display_width, self.display_height))
+        self.window = pygame.display.set_mode(
+            (self.display_width, self.display_height))
+
+        self.MainMenu = Menu(self)
+
+    def game_loop(self):
+        while self.running:
+            self.check_events()
+            self.draw_window()
+            pygame.display.update()
+
+    def check_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+                self.playing = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    self.key = 1
+                if event.key == pygame.K_2:
+                    self.key = 2
+                if event.key == pygame.K_3:
+                    self.key = 3
+                if event.key == pygame.K_4:
+                    self.key = 4
+                if event.key == pygame.K_5:
+                    self.key = 5
+                if event.key == pygame.K_6:
+                    self.key = 6
+                if event.key == pygame.K_7:
+                    self.key = 7
+                if event.key == pygame.K_8:
+                    self.key = 8
+                if event.key == pygame.K_9:
+                    self.key = 9
+                if event.key == pygame.K_DELETE:
+                    self.board.clear()
+                    self.key = None
+                if event.key == pygame.K_RETURN:
+                    i, j = self.board.selected
+                    if self.board.squares[i][j].temp != 0:
+                        # TO DO:
+                        # Impliment an error system for invalid moves (show which row column or square causes the error)
+                        # Player entered moves show up in a slightly different color and can be changed
+                        # Hint button to show next move in solve_board
+                        # undo button to take away last move?
+                        if self.board.place(self.board.squares[i][j].temp):
+                            print('Correct move')
+                        else:
+                            print('Not correct')
+                        self.key = None
+
+                        if self.board.is_finished():
+                            self.running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                clicked = self.board.click(pos)
+                if clicked:
+                    self.board.select(clicked[0], clicked[1])
+                    self.key = None
+
+        if self.board.selected and self.key != None:
+            self.board.temp_guess(self.key)
+
+    def draw_window(self):
+        self.window.fill(self.white)
+        self.board.draw(self.window)
+
+# TO DO:
+# create a working menu class
+# then create seperate classes for each menu and modify to inherit the parent menu class
+
+
+class Menu():
+
+    def __init__(self, game):
+        self.game = game
+        self.middle_w = self.game.display_width / 2
+        self.middle_h = self.game.display_height / 2
+        self.button_width = 300
+        self.button_height = 50
+        self.center_w = self.middle_w - (self.button_width/2)
+        self.title_font = pygame.font.SysFont('Corbel', 80)
+        self.reg_font = pygame.font.SysFont('Corbel', 20)
+        self.small_font = pygame.font.SysFont('Corbel', 30)
+        self.click = False
+        self.button_1 = None
+        self.button_2 = None
+        self.run_display = True
+
+    def draw_text(self, text, font, color, surface, x, y):
+        textobj = font.render(text, 1, color)
+        text_width = textobj.get_width()
+        textrect = textobj.get_rect()
+        textrect.topleft = (x - (text_width/2), y)
+        surface.blit(textobj, textrect)
+
+    def create_buttons(self):
+        self.button_1 = pygame.Rect(
+            self.center_w, 200, self.button_width, self.button_height)
+        self.button_2 = pygame.Rect(
+            self.center_w, 300, self.button_width, self.button_height)
+        pygame.draw.rect(self.game.window, self.game.dark_grey, self.button_1)
+        pygame.draw.rect(self.game.window, self.game.dark_grey, self.button_2)
+
+    def get_click(self):
+
+        mx, my = pygame.mouse.get_pos()
+        if self.button_1.collidepoint((mx, my)):
+            if self.click:
+                print('Working: click to game')
+                self.run_display = False
+        if self.button_2.collidepoint((mx, my)):
+            if self.click:
+                print('Working: click to solver')
+                self.run_display = False
+        self.click = False
+
+    def check_events(self):
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.click = True
+
+    def main_menu(self):
+        while self.run_display:
+            # while self.game.running:
+            self.game.window.fill(self.game.grey)
+
+            self.draw_text('Sudoku Solver', self.title_font, self.game.white,
+                           self.game.window, self.middle_w, 20)
+            self.draw_text('by Amos Hodges', self.reg_font, self.game.white,
+                           self.game.window, self.middle_w, 100)
+            self.create_buttons()
+            self.draw_text('Play Sudoku', self.small_font, self.game.white,
+                           self.game.window, self.middle_w, 200+(self.button_height/2)-15)
+            self.draw_text('Solve a puzzle for me', self.small_font, self.game.white,
+                           self.game.window, self.middle_w, 300+(self.button_height/2)-15)
+            self.get_click()
+            self.check_events()
+            pygame.display.update()
 
 
 def main():
 
-    # change height to accomodate options menu
-    window = pygame.display.set_mode((540, 540))
-    pygame.display.set_caption("Sudoku Solver")
-    board = Grid(9, 9, 540, 540)
-    key = None
-    run = True
-    start = time.time()
-
-    while run:
-
-        play_time = round(time.time()-start)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:
-                    key = 1
-                if event.key == pygame.K_2:
-                    key = 2
-                if event.key == pygame.K_3:
-                    key = 3
-                if event.key == pygame.K_4:
-                    key = 4
-                if event.key == pygame.K_5:
-                    key = 5
-                if event.key == pygame.K_6:
-                    key = 6
-                if event.key == pygame.K_7:
-                    key = 7
-                if event.key == pygame.K_8:
-                    key = 8
-                if event.key == pygame.K_9:
-                    key = 9
-                if event.key == pygame.K_DELETE:
-                    board.clear()
-                    key = None
-                if event.key == pygame.K_RETURN:
-                    i, j = board.selected
-                    if board.squares[i][j].temp != 0:
-                        if board.place(board.squares[i][j].temp):
-                            print('Correct move')
-                        else:
-                            print('Not correct')
-                        key = None
-
-                        if board.is_finished():
-                            run = False
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                clicked = board.click(pos)
-                if clicked:
-                    board.select(clicked[0], clicked[1])
-                    key = None
-
-        if board.selected and key != None:
-            board.temp_guess(key)
-
-        draw_window(window, board)
-
-        #redraw_window(window, board)
-
-        pygame.display.update()
-    print('Play time: ' + str(play_time) + ' seconds')
+    solver = Game()
+    while solver.running:
+        solver.MainMenu.main_menu()
+        solver.game_loop()
 
 
 main()
