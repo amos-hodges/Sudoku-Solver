@@ -7,7 +7,7 @@
 # GUI created using validate and solve functions
 
 import pygame
-from sudoku_solver import check_valid, solve_board
+from sudoku_solver import check_valid, solve_board, print_board
 from menu import *
 import time
 pygame.init()
@@ -24,6 +24,43 @@ pygame.init()
 #      -the display will indicate which row, column or box if an entry has a conflict
 #      -the user can then choose to solve the puzzle one number at a time or all at once
 #      -if solving all at once there will be an animation of the back-tracking alogorithm used
+
+
+class Generator:
+
+    def __init__(self, mode='def'):
+
+        self.rows = 9
+        self.cols = 9
+
+        self.default = [
+            [7, 8, 0, 4, 0, 0, 1, 2, 0],
+            [6, 0, 0, 0, 7, 5, 0, 0, 9],
+            [0, 0, 0, 6, 0, 1, 0, 7, 8],
+            [0, 0, 7, 0, 4, 0, 2, 6, 0],
+            [0, 0, 1, 0, 5, 0, 9, 3, 0],
+            [9, 0, 4, 0, 6, 0, 0, 0, 5],
+            [0, 7, 0, 3, 0, 0, 0, 1, 2],
+            [1, 2, 0, 0, 0, 7, 4, 0, 0],
+            [0, 4, 9, 2, 0, 6, 0, 0, 7]
+        ]
+        self.game_board = self.default
+        self.mode = mode
+
+    # create sudoku board based on difficu
+    def generate_puzzle(self):
+        if self.mode == 'solver':
+            self.game_board = [
+                [0 for j in range(self.cols)] for i in range(self.rows)]
+        if self.mode == 'easy':
+            # generate easy puzzle
+            pass
+        if self.mode == 'medium':
+            # generate medium puzzle
+            pass
+        if self.mode == 'hard':
+            # generate hard puzzle
+            pass
 
 
 class Grid:
@@ -50,9 +87,10 @@ class Grid:
         self.cols = cols
         self.width = width
         self.height = height
-        #self.mode = mode
-        self.empty_board = [
-            [0 for j in range(self.cols)] for i in range(self.rows)]
+
+        # pass board from generator class
+       # self.board = board
+
         # initialize squares
         self.squares = [[Square(self.board[i][j], i, j, width, height)
                          for j in range(cols)] for i in range(rows)]
@@ -210,24 +248,30 @@ class Game():
         # game colors
         self.black, self.white, self.grey, self.dark_grey = (
             0, 0, 0), (255, 255, 255), (128, 128, 128), (80, 80, 80)
+        # game fonts
         self.title_font = pygame.font.SysFont('Corbel', 80)
         self.reg_font = pygame.font.SysFont('Corbel', 20)
         self.small_font = pygame.font.SysFont('Corbel', 30)
-        self.playing = False
-        self.key = None
+        #display and buttons
         self.display_width = 540
         self.display_height = 600
-        self.button_width = (self.display_width/3)-10
-        self.button_height = (self.display_height-self.display_width)-10
-        self.board = Grid(9, 9, self.display_width, self.display_height)
         self.display = pygame.Surface(
             (self.display_width, self.display_height))
         self.window = pygame.display.set_mode(
             (self.display_width, self.display_height))
+        self.board = Grid(9, 9, self.display_width,
+                          self.display_height)
+        self.button_width = (self.display_width/3)-10
+        self.button_height = (self.display_height-self.display_width)-10
+
         self.main_menu = MainMenu(self)
         self.diff_menu = DiffMenu(self)
+        # self.again_menu
+        # self.stats_menu
         self.curr_menu = self.main_menu
         self.test = ['Undo', 'Hint', 'Solve']
+
+        self.key = None
 
     def game_loop(self):
         while self.playing:
@@ -259,12 +303,6 @@ class Game():
 
             self.draw_text(options[i//2], self.small_font, self.white,
                            self.window, i*90, self.display_width+15)
-        # self.draw_text('Undo', self.small_font, self.white,
-        #                self.window, 90, self.display_width+15)
-        # self.draw_text('Hint', self.small_font, self.white,
-        #                self.window, 270, self.display_width+15)
-        # self.draw_text('Solve', self.small_font, self.white,
-        #                self.window, 450, self.display_width+15)
 
     def check_events(self):
         for event in pygame.event.get():
@@ -356,136 +394,15 @@ class Solve(Game):
 
     def draw_solve_window(self):
         pass
-# TO DO:
-# create a working menu class
-# then create seperate classes for each menu and modify to inherit the parent menu class
-
-
-# class Menu():
-
-#     def __init__(self, game):
-#         self.game = game
-#         self.middle_w = self.game.display_width / 2
-#         self.middle_h = self.game.display_height / 2
-#         self.button_width = 300
-#         self.button_height = 50
-#         self.center_w = self.middle_w - (self.button_width/2)
-#         # initialize fonts in game class
-#         self.click = False
-#         self.run_display = True
-
-#     def check_events(self):
-
-#         for event in pygame.event.get():
-#             if event.type == pygame.QUIT:
-#                 pygame.quit()
-
-#             if event.type == pygame.KEYDOWN:
-#                 if event.key == pygame.K_ESCAPE:
-
-#                     pygame.quit()
-
-#             if event.type == pygame.MOUSEBUTTONDOWN:
-#                 if event.button == 1:
-#                     self.click = True
-
-# # Main Menu / Title Page
-
-
-# class MainMenu(Menu):
-#     def __init__(self, game):
-#         Menu.__init__(self, game)
-
-#     def create_menu(self):
-
-#         self.game.window.fill(self.game.grey)
-
-#         self.game.draw_text('Sudoku Solver', self.game.title_font, self.game.white,
-#                             self.game.window, self.middle_w, 20)
-#         self.game.draw_text('by Amos Hodges', self.game.reg_font, self.game.white,
-#                             self.game.window, self.middle_w, 100)
-
-#         self.play_game_btn = pygame.Rect(
-#             self.center_w, 200, self.button_width, self.button_height)
-#         self.solve_puz_btn = pygame.Rect(
-#             self.center_w, 300, self.button_width, self.button_height)
-#         pygame.draw.rect(self.game.window,
-#                          self.game.dark_grey, self.play_game_btn)
-#         pygame.draw.rect(self.game.window,
-#                          self.game.dark_grey, self.solve_puz_btn)
-#         self.game.draw_text('Play Sudoku', self.game.small_font, self.game.white,
-#                             self.game.window, self.middle_w, 200+(self.button_height/2)-15)
-#         self.game.draw_text('Solve a puzzle for me', self.game.small_font, self.game.white,
-#                             self.game.window, self.middle_w, 300+(self.button_height/2)-15)
-
-#     def display_menu(self):
-#         self.run_display = True
-#         while self.run_display:
-#             self.create_menu()
-#             self.get_click()
-#             self.check_events()
-#             pygame.display.update()
-
-#     def get_click(self):
-
-#         mx, my = pygame.mouse.get_pos()
-
-#         if self.click:
-#             if self.play_game_btn.collidepoint((mx, my)):
-#                 self.game.curr_menu = self.game.diff_menu
-#                 # print('thisworks')
-#                 self.run_display = False
-#             if self.solve_puz_btn.collidepoint((mx, my)):
-#                 #print('this does too')
-#                 self.run_display = False
-#                 self.game.playing = True
-#         self.click = False
-
-
-# # Enter username / select difficulty
-
-
-# class DiffMenu(Menu):
-#     def __init__(self, game):
-#         Menu.__init__(self, game)
-
-#     def create_menu(self):
-
-#         self.game.window.fill(self.game.grey)
-
-#         self.game.draw_text('Enter Username', self.game.title_font, self.game.white,
-#                             self.game.window, self.middle_w, 20)
-#         # Need text input to be stored
-#         self.play_btn = pygame.Rect(
-#             self.center_w, 300, self.button_width, self.button_height)
-
-#         pygame.draw.rect(self.game.window, self.game.dark_grey, self.play_btn)
-
-#         self.game.draw_text('Play', self.game.small_font, self.game.white,
-#                             self.game.window, self.middle_w, 300+(self.button_height/2)-15)
-
-#     def display_menu(self):
-#         self.run_display = True
-#         while self.run_display:
-#             self.create_menu()
-#             self.get_click()
-#             self.check_events()
-#             pygame.display.update()
-
-#     def get_click(self):
-
-#         mx, my = pygame.mouse.get_pos()
-#         if self.play_btn.collidepoint((mx, my)):
-#             if self.click:
-#                 print('Working: play game')
-#                 self.game.playing = True
-#                 self.run_display = False
-#         self.click = False
 
 
 def main():
 
     solver = Game()
+    # gen = Generator('solver')
+    # gen.generate_puzzle()
+    # solve_board(gen.game_board)
+    # print_board(gen.game_board)
     while solver.running:
         solver.curr_menu.display_menu()
 

@@ -1,7 +1,7 @@
 #################
 # Soduko Solver #
 #################
-
+import random
 ## Amos Hodges ##
 
 # functions for validating a given entry and solving the board
@@ -21,12 +21,30 @@ sample_board = [
     [0, 4, 9, 2, 0, 6, 0, 0, 7]
 ]
 
+empty_board = [[0 for j in range(9)] for i in range(9)]
 
-### solve function ###
-# uses find funtion to seek the next empty space
-# iterates 1-9 at the empty space and goes with the first valid option
-# recursively calls itself progressing through the board
-# when an option is invalid, it resets the spot to 0 (empty) and backtracks to the previous correct position
+# populates the 3x3 boxes randomly
+
+
+def fill_3x3_box(board, lo, hi):
+    l = list(range(1, 10))
+    for row in range(lo, hi):
+        for col in range(lo, hi):
+            num = random.choice(l)
+            board[row][col] = num
+            l.remove(num)
+
+
+def gen_random_seed(board):
+    for i in range(9):
+        if i % 3 == 0:
+            fill_3x3_box(board, i, i+3)
+
+    ### solve function ###
+    # uses find funtion to seek the next empty space
+    # iterates 1-9 at the empty space and goes with the first valid option
+    # recursively calls itself progressing through the board
+    # when an option is invalid, it resets the spot to 0 (empty) and backtracks to the previous correct position
 
 
 def solve_board(board):
@@ -135,3 +153,8 @@ def find_empty(board):
 # solve_board(sample_board)
 # print("-----------------------------")
 # print_board(sample_board)
+print_board(empty_board)
+gen_random_seed(empty_board)
+print_board(empty_board)
+solve_board(empty_board)
+print_board(empty_board)
