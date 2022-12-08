@@ -1,146 +1,131 @@
-
 #################
 # Soduko Solver #
 #################
 
 ## Amos Hodges ##
 
+## menu classes #
 
-# drafting menu for solver/game
-
-from pygame.locals import *
 import pygame
-import sys
 
 
-pygame.init()
-pygame.display.set_caption('Sudoku Solver Menu')
+class Menu():
 
-#################################################
-# TO DO
-# write a function to center text within rectangles
-# convert to class and tidy up variables
-# link game class to  different menus
-#
-#
-# Eventually:
-# animation of sudoku board on menu page?
+    def __init__(self, game):
+        self.game = game
+        self.middle_w = self.game.display_width / 2
+        self.middle_h = self.game.display_height / 2
+        self.button_width = 300
+        self.button_height = 50
+        self.center_w = self.middle_w - (self.button_width/2)
+        # initialize fonts in game class
+        self.click = False
+        self.run_display = True
 
-display_width = 540
-display_height = 540
-screen = pygame.display.set_mode((display_width, display_height))
+    def check_events(self):
 
-title_font = pygame.font.SysFont('Corbel', 80)
-reg_font = pygame.font.SysFont('Corbel', 20)
-smallfont = pygame.font.SysFont('Corbel', 30)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
 
-# draw text on screen
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
 
+                    pygame.quit()
 
-def draw_text(text, font, color, surface, x, y):
-    textobj = font.render(text, 1, color)
-    text_width = textobj.get_width()
-    textrect = textobj.get_rect()
-    textrect.topleft = (x - (text_width/2), y)
-    surface.blit(textobj, textrect)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.click = True
 
-
-click = False
+# Main Menu / Title Page
 
 
-button_width = 300
-button_height = 50
+class MainMenu(Menu):
+    def __init__(self, game):
+        Menu.__init__(self, game)
 
-center_w = (display_width/2) - (button_width/2)
-center_h = (display_height/2) - (button_height/2)
+    def create_menu(self):
 
+        self.game.window.fill(self.game.grey)
 
-def main_menu():
+        self.game.draw_text('Sudoku Solver', self.game.title_font, self.game.white,
+                            self.game.window, self.middle_w, 20)
+        self.game.draw_text('by Amos Hodges', self.game.reg_font, self.game.white,
+                            self.game.window, self.middle_w, 100)
 
-    while True:
+        self.play_game_btn = pygame.Rect(
+            self.center_w, 200, self.button_width, self.button_height)
+        self.solve_puz_btn = pygame.Rect(
+            self.center_w, 300, self.button_width, self.button_height)
+        pygame.draw.rect(self.game.window,
+                         self.game.dark_grey, self.play_game_btn)
+        pygame.draw.rect(self.game.window,
+                         self.game.dark_grey, self.solve_puz_btn)
+        self.game.draw_text('Play Sudoku', self.game.small_font, self.game.white,
+                            self.game.window, self.middle_w, 200+(self.button_height/2)-15)
+        self.game.draw_text('Solve a puzzle for me', self.game.small_font, self.game.white,
+                            self.game.window, self.middle_w, 300+(self.button_height/2)-15)
 
-        screen.fill((128, 128, 128))
+    def display_menu(self):
+        self.run_display = True
+        while self.run_display:
+            self.create_menu()
+            self.get_click()
+            self.check_events()
+            pygame.display.update()
 
-        draw_text('Sudoku Solver', title_font, (255, 255, 255),
-                  screen, display_width/2, 20)
-        draw_text('by Amos Hodges', reg_font, (255, 255, 255),
-                  screen, display_width/2, 100)
+    def get_click(self):
 
         mx, my = pygame.mouse.get_pos()
 
-        button_1 = pygame.Rect(center_w, 200, button_width, button_height)
-        button_2 = pygame.Rect(center_w, 300, button_width, button_height)
-
-        pygame.draw.rect(screen, (80, 80, 80), button_1)
-        pygame.draw.rect(screen, (80, 80, 80), button_2)
-
-        draw_text('Play Sudoku', smallfont, (255, 255, 255),
-                  screen, display_width/2, 200+(button_height/2)-15)
-        draw_text('Solve a puzzle for me', smallfont, (255, 255, 255),
-                  screen, display_width/2, 300+(button_height/2)-15)
-        if button_1.collidepoint((mx, my)):
-            if click:
-                game()
-        if button_2.collidepoint((mx, my)):
-            if click:
-                solve()
-        click = False
-
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
-            if event.type == MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-
-        pygame.display.update()
+        if self.click:
+            if self.play_game_btn.collidepoint((mx, my)):
+                self.game.curr_menu = self.game.diff_menu
+                # print('thisworks')
+                self.run_display = False
+            if self.solve_puz_btn.collidepoint((mx, my)):
+                #print('this does too')
+                self.run_display = False
+                self.game.playing = True
+        self.click = False
 
 
-def game():
-    running = True
-    while running:
-        screen.fill((128, 128, 128))
-
-        draw_text('Play Sudoku', title_font, (255, 255, 255),
-                  screen, display_width/2, 20)
-        draw_text('Enter username:', reg_font,
-                  (255, 255, 255), screen, display_width/2, 150)
-        draw_text('Select Difficulty:', reg_font,
-                  (255, 255, 255), screen, display_width/2, 300)
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    running = False
-
-        pygame.display.update()
+# Enter username / select difficulty
 
 
-def solve():
-    running = True
-    while running:
-        screen.fill((128, 128, 128))
+class DiffMenu(Menu):
+    def __init__(self, game):
+        Menu.__init__(self, game)
 
-        draw_text('Solver', title_font, (255, 255, 255),
-                  screen, display_width/2, 20)
-        draw_text('Enter a valid sudoku puzzle', reg_font,
-                  (255, 255, 255), screen, display_width/2, 150)
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    running = False
+    def create_menu(self):
 
-        pygame.display.update()
+        self.game.window.fill(self.game.grey)
 
+        self.game.draw_text('Enter Username', self.game.title_font, self.game.white,
+                            self.game.window, self.middle_w, 20)
+        # Need text input to be stored
+        self.play_btn = pygame.Rect(
+            self.center_w, 300, self.button_width, self.button_height)
 
-main_menu()
+        pygame.draw.rect(self.game.window, self.game.dark_grey, self.play_btn)
+
+        self.game.draw_text('Play', self.game.small_font, self.game.white,
+                            self.game.window, self.middle_w, 300+(self.button_height/2)-15)
+
+    def display_menu(self):
+        self.run_display = True
+        while self.run_display:
+            self.create_menu()
+            self.get_click()
+            self.check_events()
+            pygame.display.update()
+
+    def get_click(self):
+
+        mx, my = pygame.mouse.get_pos()
+        if self.play_btn.collidepoint((mx, my)):
+            if self.click:
+                print('Working: play game')
+                self.game.playing = True
+                self.run_display = False
+        self.click = False

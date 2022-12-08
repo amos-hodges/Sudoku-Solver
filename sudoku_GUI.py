@@ -8,6 +8,7 @@
 
 import pygame
 from sudoku_solver import check_valid, solve_board
+from menu import *
 import time
 pygame.init()
 
@@ -49,6 +50,7 @@ class Grid:
         self.cols = cols
         self.width = width
         self.height = height
+        #self.mode = mode
         self.empty_board = [
             [0 for j in range(self.cols)] for i in range(self.rows)]
         # initialize squares
@@ -339,6 +341,9 @@ class Play(Game):
         self.state = 'Playing'
         self.options = ['Undo', 'Hint', 'Solve']
 
+    def draw_game_window(self):
+        pass
+
 
 # game class for solving user entered puzzle
 
@@ -349,128 +354,133 @@ class Solve(Game):
         self.state = 'Solving'
         self.options = ['Undo', 'Step', 'Solve']
 
+    def draw_solve_window(self):
+        pass
 # TO DO:
 # create a working menu class
 # then create seperate classes for each menu and modify to inherit the parent menu class
 
 
-class Menu():
+# class Menu():
 
-    def __init__(self, game):
-        self.game = game
-        self.middle_w = self.game.display_width / 2
-        self.middle_h = self.game.display_height / 2
-        self.button_width = 300
-        self.button_height = 50
-        self.center_w = self.middle_w - (self.button_width/2)
-        # initialize fonts in game class
-        self.click = False
-        self.run_display = True
+#     def __init__(self, game):
+#         self.game = game
+#         self.middle_w = self.game.display_width / 2
+#         self.middle_h = self.game.display_height / 2
+#         self.button_width = 300
+#         self.button_height = 50
+#         self.center_w = self.middle_w - (self.button_width/2)
+#         # initialize fonts in game class
+#         self.click = False
+#         self.run_display = True
 
-    def check_events(self):
+#     def check_events(self):
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 pygame.quit()
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+#             if event.type == pygame.KEYDOWN:
+#                 if event.key == pygame.K_ESCAPE:
 
-                    pygame.quit()
+#                     pygame.quit()
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    self.click = True
+#             if event.type == pygame.MOUSEBUTTONDOWN:
+#                 if event.button == 1:
+#                     self.click = True
 
-# Main Menu / Title Page
-
-
-class MainMenu(Menu):
-    def __init__(self, game):
-        Menu.__init__(self, game)
-
-    def create_menu(self):
-
-        self.game.window.fill(self.game.grey)
-
-        self.game.draw_text('Sudoku Solver', self.game.title_font, self.game.white,
-                            self.game.window, self.middle_w, 20)
-        self.game.draw_text('by Amos Hodges', self.game.reg_font, self.game.white,
-                            self.game.window, self.middle_w, 100)
-
-        self.button_1 = pygame.Rect(
-            self.center_w, 200, self.button_width, self.button_height)
-        self.button_2 = pygame.Rect(
-            self.center_w, 300, self.button_width, self.button_height)
-        pygame.draw.rect(self.game.window, self.game.dark_grey, self.button_1)
-        pygame.draw.rect(self.game.window, self.game.dark_grey, self.button_2)
-        self.game.draw_text('Play Sudoku', self.game.small_font, self.game.white,
-                            self.game.window, self.middle_w, 200+(self.button_height/2)-15)
-        self.game.draw_text('Solve a puzzle for me', self.game.small_font, self.game.white,
-                            self.game.window, self.middle_w, 300+(self.button_height/2)-15)
-
-    def display_menu(self):
-        self.run_display = True
-        while self.run_display:
-            self.create_menu()
-            self.get_click()
-            self.check_events()
-            pygame.display.update()
-
-    def get_click(self):
-
-        mx, my = pygame.mouse.get_pos()
-
-        if self.click:
-            if self.button_1.collidepoint((mx, my)):
-                self.game.curr_menu = self.game.diff_menu
-                print('thisworks')
-                self.run_display = False
-            if self.button_2.collidepoint((mx, my)):
-                print('this does too')
-                self.run_display = False
-        self.click = False
+# # Main Menu / Title Page
 
 
-# Enter username / select difficulty
+# class MainMenu(Menu):
+#     def __init__(self, game):
+#         Menu.__init__(self, game)
+
+#     def create_menu(self):
+
+#         self.game.window.fill(self.game.grey)
+
+#         self.game.draw_text('Sudoku Solver', self.game.title_font, self.game.white,
+#                             self.game.window, self.middle_w, 20)
+#         self.game.draw_text('by Amos Hodges', self.game.reg_font, self.game.white,
+#                             self.game.window, self.middle_w, 100)
+
+#         self.play_game_btn = pygame.Rect(
+#             self.center_w, 200, self.button_width, self.button_height)
+#         self.solve_puz_btn = pygame.Rect(
+#             self.center_w, 300, self.button_width, self.button_height)
+#         pygame.draw.rect(self.game.window,
+#                          self.game.dark_grey, self.play_game_btn)
+#         pygame.draw.rect(self.game.window,
+#                          self.game.dark_grey, self.solve_puz_btn)
+#         self.game.draw_text('Play Sudoku', self.game.small_font, self.game.white,
+#                             self.game.window, self.middle_w, 200+(self.button_height/2)-15)
+#         self.game.draw_text('Solve a puzzle for me', self.game.small_font, self.game.white,
+#                             self.game.window, self.middle_w, 300+(self.button_height/2)-15)
+
+#     def display_menu(self):
+#         self.run_display = True
+#         while self.run_display:
+#             self.create_menu()
+#             self.get_click()
+#             self.check_events()
+#             pygame.display.update()
+
+#     def get_click(self):
+
+#         mx, my = pygame.mouse.get_pos()
+
+#         if self.click:
+#             if self.play_game_btn.collidepoint((mx, my)):
+#                 self.game.curr_menu = self.game.diff_menu
+#                 # print('thisworks')
+#                 self.run_display = False
+#             if self.solve_puz_btn.collidepoint((mx, my)):
+#                 #print('this does too')
+#                 self.run_display = False
+#                 self.game.playing = True
+#         self.click = False
 
 
-class DiffMenu(Menu):
-    def __init__(self, game):
-        Menu.__init__(self, game)
+# # Enter username / select difficulty
 
-    def create_menu(self):
 
-        self.game.window.fill(self.game.grey)
+# class DiffMenu(Menu):
+#     def __init__(self, game):
+#         Menu.__init__(self, game)
 
-        self.game.draw_text('Enter Username', self.game.title_font, self.game.white,
-                            self.game.window, self.middle_w, 20)
-        # Need text input to be stored
-        self.play_btn = pygame.Rect(
-            self.center_w, 300, self.button_width, self.button_height)
+#     def create_menu(self):
 
-        pygame.draw.rect(self.game.window, self.game.dark_grey, self.play_btn)
+#         self.game.window.fill(self.game.grey)
 
-        self.game.draw_text('Play', self.game.small_font, self.game.white,
-                            self.game.window, self.middle_w, 300+(self.button_height/2)-15)
+#         self.game.draw_text('Enter Username', self.game.title_font, self.game.white,
+#                             self.game.window, self.middle_w, 20)
+#         # Need text input to be stored
+#         self.play_btn = pygame.Rect(
+#             self.center_w, 300, self.button_width, self.button_height)
 
-    def display_menu(self):
-        self.run_display = True
-        while self.run_display:
-            self.create_menu()
-            self.get_click()
-            self.check_events()
-            pygame.display.update()
+#         pygame.draw.rect(self.game.window, self.game.dark_grey, self.play_btn)
 
-    def get_click(self):
+#         self.game.draw_text('Play', self.game.small_font, self.game.white,
+#                             self.game.window, self.middle_w, 300+(self.button_height/2)-15)
 
-        mx, my = pygame.mouse.get_pos()
-        if self.play_btn.collidepoint((mx, my)):
-            if self.click:
-                print('Working: play game')
-                self.game.playing = True
-                self.run_display = False
-        self.click = False
+#     def display_menu(self):
+#         self.run_display = True
+#         while self.run_display:
+#             self.create_menu()
+#             self.get_click()
+#             self.check_events()
+#             pygame.display.update()
+
+#     def get_click(self):
+
+#         mx, my = pygame.mouse.get_pos()
+#         if self.play_btn.collidepoint((mx, my)):
+#             if self.click:
+#                 print('Working: play game')
+#                 self.game.playing = True
+#                 self.run_display = False
+#         self.click = False
 
 
 def main():
@@ -478,7 +488,7 @@ def main():
     solver = Game()
     while solver.running:
         solver.curr_menu.display_menu()
-        # print(solver.curr_menu.display_menu())
+
         # solver.main_menu.display_menu()
         # solver.diff_menu.display_menu()
         solver.game_loop()
