@@ -6,6 +6,11 @@
 
 # GUI created using validate and solve functions
 
+### TO DO: ###
+# -finish creating separate Game() class children for Solve() and Play()
+# -check for unused variables and simplify
+# -impliment undo, help/step , and solve buttons
+
 import pygame
 #from sudoku_solver import check_valid, solve_board, print_board
 from sudoku import *
@@ -15,72 +20,33 @@ pygame.init()
 
 # End goal:
 
-# A menu interface that:
-# 1. allows the user to choose between playing sudoku and entering a puzzle to solve
-# 2. allows the player to enter their username to keep track of scores/stats
-# 3. if playing sudoku, the user can choose from easy, medium or hard and it will randomly generate
-#      -until the window is closed, the program will keep track of how many puzzles are solves, the difficulty and the time for each
-#      -when the user is done the program will display the stats and highlight the best game
-# 4. if solving sudoku the user can enter numbers on a blank board
-#      -the display will indicate which row, column or box if an entry has a conflict
-#      -the user can then choose to solve the puzzle one number at a time or all at once
-#      -if solving all at once there will be an animation of the back-tracking alogorithm used
-
-#################moving to sudoku class####################
-
-# class Generator:
-
-#     def __init__(self, mode='def'):
-
-#         self.rows = 9
-#         self.cols = 9
-
-#         self.default = [
-#             [7, 8, 0, 4, 0, 0, 1, 2, 0],
-#             [6, 0, 0, 0, 7, 5, 0, 0, 9],
-#             [0, 0, 0, 6, 0, 1, 0, 7, 8],
-#             [0, 0, 7, 0, 4, 0, 2, 6, 0],
-#             [0, 0, 1, 0, 5, 0, 9, 3, 0],
-#             [9, 0, 4, 0, 6, 0, 0, 0, 5],
-#             [0, 7, 0, 3, 0, 0, 0, 1, 2],
-#             [1, 2, 0, 0, 0, 7, 4, 0, 0],
-#             [0, 4, 9, 2, 0, 6, 0, 0, 7]
-#         ]
-#         self.game_board = self.default
-#         self.mode = mode
-
-#     # create sudoku board based on difficu
-#     def generate_puzzle(self):
-#         if self.mode == 'solver':
-#             self.game_board = [
-#                 [0 for j in range(self.cols)] for i in range(self.rows)]
-#         if self.mode == 'easy':
-#             # generate easy puzzle
-#             pass
-#         if self.mode == 'medium':
-#             # generate medium puzzle
-#             pass
-#         if self.mode == 'hard':
-#             # generate hard puzzle
-#             pass
-
-################################################
+#   A menu interface that:
+# [ ]   1. allows the user to choose between playing sudoku and entering a puzzle to solve
+# [ ]   2. allows the player to enter their username to keep track of scores/stats
+# [ ]   3. if playing sudoku, the user can choose from easy, medium or hard and it will randomly generate
+# [ ]    -until the window is closed, the program will keep track of how many puzzles are solves, the difficulty and the time for each
+# [ ]    -when the user is done the program will display the stats and highlight the best game
+# [ ]   4. if solving sudoku the user can enter numbers on a blank board
+# [ ]    -the display will indicate which row, column or box if an entry has a conflict
+# [ ]    -the user can then choose to solve the puzzle one number at a time or all at once
+# [ ]    -if solving all at once there will be an animation of the back-tracking alogorithm used
+# [ ]   5. a 'play again/solve more' page upon completing a puzzle in either mode
 
 
 class Grid:
 
     # default board
-    board = [
-        [7, 8, 0, 4, 0, 0, 1, 2, 0],
-        [6, 0, 0, 0, 7, 5, 0, 0, 9],
-        [0, 0, 0, 6, 0, 1, 0, 7, 8],
-        [0, 0, 7, 0, 4, 0, 2, 6, 0],
-        [0, 0, 1, 0, 5, 0, 9, 3, 0],
-        [9, 0, 4, 0, 6, 0, 0, 0, 5],
-        [0, 7, 0, 3, 0, 0, 0, 1, 2],
-        [1, 2, 0, 0, 0, 7, 4, 0, 0],
-        [0, 4, 9, 2, 0, 6, 0, 0, 7]
-    ]
+    # board = [
+    #     [7, 8, 0, 4, 0, 0, 1, 2, 0],
+    #     [6, 0, 0, 0, 7, 5, 0, 0, 9],
+    #     [0, 0, 0, 6, 0, 1, 0, 7, 8],
+    #     [0, 0, 7, 0, 4, 0, 2, 6, 0],
+    #     [0, 0, 1, 0, 5, 0, 9, 3, 0],
+    #     [9, 0, 4, 0, 6, 0, 0, 0, 5],
+    #     [0, 7, 0, 3, 0, 0, 0, 1, 2],
+    #     [1, 2, 0, 0, 0, 7, 4, 0, 0],
+    #     [0, 4, 9, 2, 0, 6, 0, 0, 7]
+    # ]
 
     # next step: write method to randomly generate solvable states
     # allow user to enter a board manually to solve, or select from ease, medium, hard
@@ -92,13 +58,11 @@ class Grid:
         self.width = width
         self.height = height
 
+        # conver to function that sets the board based on the game mode
         self.rules = Sudoku()
-        ###
-        # uncomment for blank board inialized in sudoku class
-        #self.board = self.rules.board
 
-        ### NEED TO FIX ###
-        # first number placed on board is correct no matter what
+        # uncomment for blank board inialized in sudoku class
+        self.board = self.rules.board
 
         # initialize squares
         self.squares = [[Square(self.board[i][j], i, j, width, height)
@@ -117,6 +81,7 @@ class Grid:
     # write a "hint" functionality using the solve_board function
 
     def place(self, val):
+
         # if a square is empty, use the selected position to update the value
         # check if the move is valid and if it is in the correct solved solution
         row, col = self.selected

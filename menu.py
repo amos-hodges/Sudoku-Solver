@@ -6,6 +6,11 @@
 
 ## menu classes #
 
+### TO DO: ###
+# -finish menus for play/solve again and stats page
+# -once game classes are complete make sure selection
+#  & escape sequences are correct
+
 import pygame
 
 
