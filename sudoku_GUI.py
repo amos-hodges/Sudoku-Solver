@@ -49,7 +49,8 @@ class Grid:
         self.cols = cols
         self.width = width
         self.height = height
-
+        self.empty_board = [
+            [0 for j in range(self.cols)] for i in range(self.rows)]
         # initialize squares
         self.squares = [[Square(self.board[i][j], i, j, width, height)
                          for j in range(cols)] for i in range(rows)]
@@ -203,7 +204,7 @@ class Game():
         # state of program
         self.running = True
         # state of game (solver or play)
-
+        self.playing = False
         # game colors
         self.black, self.white, self.grey, self.dark_grey = (
             0, 0, 0), (255, 255, 255), (128, 128, 128), (80, 80, 80)
@@ -224,9 +225,10 @@ class Game():
         self.main_menu = MainMenu(self)
         self.diff_menu = DiffMenu(self)
         self.curr_menu = self.main_menu
+        self.test = ['Undo', 'Hint', 'Solve']
 
     def game_loop(self):
-        while self.running:
+        while self.playing:
             self.check_events()
             self.draw_window()
             pygame.display.update()
@@ -238,7 +240,8 @@ class Game():
         textrect.topleft = (x - (text_width/2), y)
         surface.blit(textobj, textrect)
 
-    def create_buttons(self):
+# MAke genecric function to display text options based on which class is using it
+    def create_buttons(self, options):
 
         self.undo_btn = pygame.Rect(
             5, self.display_width+6, self.button_width, self.button_height)
@@ -250,13 +253,16 @@ class Game():
         pygame.draw.rect(self.window, self.grey, self.undo_btn)
         pygame.draw.rect(self.window, self.grey, self.hint_butn)
         pygame.draw.rect(self.window, self.grey, self.solve_btn)
+        for i in range(1, 6, 2):
 
-        self.draw_text('Undo', self.small_font, self.white,
-                       self.window, 90, self.display_width+15)
-        self.draw_text('Hint', self.small_font, self.white,
-                       self.window, 270, self.display_width+15)
-        self.draw_text('Solve', self.small_font, self.white,
-                       self.window, 450, self.display_width+15)
+            self.draw_text(options[i//2], self.small_font, self.white,
+                           self.window, i*90, self.display_width+15)
+        # self.draw_text('Undo', self.small_font, self.white,
+        #                self.window, 90, self.display_width+15)
+        # self.draw_text('Hint', self.small_font, self.white,
+        #                self.window, 270, self.display_width+15)
+        # self.draw_text('Solve', self.small_font, self.white,
+        #                self.window, 450, self.display_width+15)
 
     def check_events(self):
         for event in pygame.event.get():
@@ -285,6 +291,9 @@ class Game():
                 if event.key == pygame.K_DELETE:
                     self.board.clear()
                     self.key = None
+                if event.key == pygame.K_ESCAPE:
+                    self.curr_menu = self.main_menu
+                    self.playing = False
                 if event.key == pygame.K_RETURN:
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
@@ -319,7 +328,26 @@ class Game():
     def draw_window(self):
         self.window.fill(self.white)
         self.board.draw(self.window)
-        self.create_buttons()
+        self.create_buttons(self.test)
+
+# game class for playing generated sudoku games
+
+
+class Play(Game):
+    def __init__(self):
+        Game.__init__()
+        self.state = 'Playing'
+        self.options = ['Undo', 'Hint', 'Solve']
+
+
+# game class for solving user entered puzzle
+
+
+class Solve(Game):
+    def __init__(self):
+        Game.__init__()
+        self.state = 'Solving'
+        self.options = ['Undo', 'Step', 'Solve']
 
 # TO DO:
 # create a working menu class
@@ -397,22 +425,16 @@ class MainMenu(Menu):
             if self.button_1.collidepoint((mx, my)):
                 self.game.curr_menu = self.game.diff_menu
                 print('thisworks')
+                self.run_display = False
             if self.button_2.collidepoint((mx, my)):
                 print('this does too')
                 self.run_display = False
-        # if self.button_1.collidepoint((mx, my)):
-        #     if self.click:
-        #         print('Working: click to game')
-        #         self.game.curr_menu = self.game.diff_menu
-        #         self.run_display = False
-        # if self.button_2.collidepoint((mx, my)):
-        #     if self.click:
-        #         print('Working: click to solver')
-        #         self.run_display = False
         self.click = False
 
 
 # Enter username / select difficulty
+
+
 class DiffMenu(Menu):
     def __init__(self, game):
         Menu.__init__(self, game)
@@ -423,7 +445,7 @@ class DiffMenu(Menu):
 
         self.game.draw_text('Enter Username', self.game.title_font, self.game.white,
                             self.game.window, self.middle_w, 20)
-
+        # Need text input to be stored
         self.play_btn = pygame.Rect(
             self.center_w, 300, self.button_width, self.button_height)
 
@@ -446,6 +468,7 @@ class DiffMenu(Menu):
         if self.play_btn.collidepoint((mx, my)):
             if self.click:
                 print('Working: play game')
+                self.game.playing = True
                 self.run_display = False
         self.click = False
 
