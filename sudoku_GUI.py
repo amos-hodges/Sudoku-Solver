@@ -49,6 +49,7 @@ class Grid:
         self.cols = cols
         self.width = width
         self.height = height
+
         # initialize squares
         self.squares = [[Square(self.board[i][j], i, j, width, height)
                          for j in range(cols)] for i in range(rows)]
@@ -135,10 +136,13 @@ class Grid:
             else:
                 thickness = 1
             # Draw black vertical lines on the window, every 3rd 4x thicker
+
             pygame.draw.line(win, (0, 0, 0), (0, i*gap),
                              (self.width, i*gap), thickness)
             pygame.draw.line(win, (0, 0, 0), (i*gap, 0),
-                             (i*gap, self.height), thickness)
+                             (i*gap, self.height - gap), thickness)
+            # pygame.draw.line(win, (0, 0, 0), (i*gap, 0),
+            #                 (i*gap, self.height), thickness)
 
             # draw squares
         for i in range(self.rows):
@@ -203,10 +207,13 @@ class Game():
         # game colors
         self.black, self.white, self.grey, self.dark_grey = (
             0, 0, 0), (255, 255, 255), (128, 128, 128), (80, 80, 80)
+        self.small_font = pygame.font.SysFont('Corbel', 30)
         self.playing = False
         self.key = None
         self.display_width = 540
         self.display_height = 600
+        self.button_width = (self.display_width/3)-10
+        self.button_height = (self.display_height-self.display_width)-10
         self.board = Grid(9, 9, self.display_width, self.display_height)
         self.display = pygame.Surface(
             (self.display_width, self.display_height))
@@ -220,6 +227,33 @@ class Game():
             self.check_events()
             self.draw_window()
             pygame.display.update()
+
+    def draw_text(self, text, font, color, surface, x, y):
+        textobj = font.render(text, 1, color)
+        text_width = textobj.get_width()
+        textrect = textobj.get_rect()
+        textrect.topleft = (x - (text_width/2), y)
+        surface.blit(textobj, textrect)
+
+    def create_buttons(self):
+
+        self.undo_btn = pygame.Rect(
+            5, self.display_width+6, self.button_width, self.button_height)
+        self.hint_butn = pygame.Rect(
+            self.button_width+15, self.display_width+6, self.button_width, self.button_height)
+        self.solve_btn = pygame.Rect(
+            (self.button_width*2)+25, self.display_width+6, self.button_width, self.button_height)
+
+        pygame.draw.rect(self.window, self.grey, self.undo_btn)
+        pygame.draw.rect(self.window, self.grey, self.hint_butn)
+        pygame.draw.rect(self.window, self.grey, self.solve_btn)
+
+        self.draw_text('Undo', self.small_font, self.white,
+                       self.window, 90, self.display_width+15)
+        self.draw_text('Hint', self.small_font, self.white,
+                       self.window, 270, self.display_width+15)
+        self.draw_text('Solve', self.small_font, self.white,
+                       self.window, 450, self.display_width+15)
 
     def check_events(self):
         for event in pygame.event.get():
@@ -267,17 +301,22 @@ class Game():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                clicked = self.board.click(pos)
-                if clicked:
-                    self.board.select(clicked[0], clicked[1])
-                    self.key = None
-
+                # click on game board
+                if pos[1] < self.display_width:
+                    clicked = self.board.click(pos)
+                    if clicked:
+                        self.board.select(clicked[0], clicked[1])
+                        self.key = None
+                # click on button
+                else:
+                    print('clicking a button')
         if self.board.selected and self.key != None:
             self.board.temp_guess(self.key)
 
     def draw_window(self):
         self.window.fill(self.white)
         self.board.draw(self.window)
+        self.create_buttons()
 
 # TO DO:
 # create a working menu class
