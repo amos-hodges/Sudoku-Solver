@@ -7,7 +7,8 @@
 # GUI created using validate and solve functions
 
 import pygame
-from sudoku_solver import check_valid, solve_board, print_board
+#from sudoku_solver import check_valid, solve_board, print_board
+from sudoku import *
 from menu import *
 import time
 pygame.init()
@@ -25,42 +26,45 @@ pygame.init()
 #      -the user can then choose to solve the puzzle one number at a time or all at once
 #      -if solving all at once there will be an animation of the back-tracking alogorithm used
 
+#################moving to sudoku class####################
 
-class Generator:
+# class Generator:
 
-    def __init__(self, mode='def'):
+#     def __init__(self, mode='def'):
 
-        self.rows = 9
-        self.cols = 9
+#         self.rows = 9
+#         self.cols = 9
 
-        self.default = [
-            [7, 8, 0, 4, 0, 0, 1, 2, 0],
-            [6, 0, 0, 0, 7, 5, 0, 0, 9],
-            [0, 0, 0, 6, 0, 1, 0, 7, 8],
-            [0, 0, 7, 0, 4, 0, 2, 6, 0],
-            [0, 0, 1, 0, 5, 0, 9, 3, 0],
-            [9, 0, 4, 0, 6, 0, 0, 0, 5],
-            [0, 7, 0, 3, 0, 0, 0, 1, 2],
-            [1, 2, 0, 0, 0, 7, 4, 0, 0],
-            [0, 4, 9, 2, 0, 6, 0, 0, 7]
-        ]
-        self.game_board = self.default
-        self.mode = mode
+#         self.default = [
+#             [7, 8, 0, 4, 0, 0, 1, 2, 0],
+#             [6, 0, 0, 0, 7, 5, 0, 0, 9],
+#             [0, 0, 0, 6, 0, 1, 0, 7, 8],
+#             [0, 0, 7, 0, 4, 0, 2, 6, 0],
+#             [0, 0, 1, 0, 5, 0, 9, 3, 0],
+#             [9, 0, 4, 0, 6, 0, 0, 0, 5],
+#             [0, 7, 0, 3, 0, 0, 0, 1, 2],
+#             [1, 2, 0, 0, 0, 7, 4, 0, 0],
+#             [0, 4, 9, 2, 0, 6, 0, 0, 7]
+#         ]
+#         self.game_board = self.default
+#         self.mode = mode
 
-    # create sudoku board based on difficu
-    def generate_puzzle(self):
-        if self.mode == 'solver':
-            self.game_board = [
-                [0 for j in range(self.cols)] for i in range(self.rows)]
-        if self.mode == 'easy':
-            # generate easy puzzle
-            pass
-        if self.mode == 'medium':
-            # generate medium puzzle
-            pass
-        if self.mode == 'hard':
-            # generate hard puzzle
-            pass
+#     # create sudoku board based on difficu
+#     def generate_puzzle(self):
+#         if self.mode == 'solver':
+#             self.game_board = [
+#                 [0 for j in range(self.cols)] for i in range(self.rows)]
+#         if self.mode == 'easy':
+#             # generate easy puzzle
+#             pass
+#         if self.mode == 'medium':
+#             # generate medium puzzle
+#             pass
+#         if self.mode == 'hard':
+#             # generate hard puzzle
+#             pass
+
+################################################
 
 
 class Grid:
@@ -88,8 +92,13 @@ class Grid:
         self.width = width
         self.height = height
 
-        # pass board from generator class
-       # self.board = board
+        self.rules = Sudoku()
+        ###
+        # uncomment for blank board inialized in sudoku class
+        #self.board = self.rules.board
+
+        ### NEED TO FIX ###
+        # first number placed on board is correct no matter what
 
         # initialize squares
         self.squares = [[Square(self.board[i][j], i, j, width, height)
@@ -115,7 +124,7 @@ class Grid:
             self.squares[row][col].set(val)
             self.update_model()
 
-            if check_valid(self.model, val, (row, col)) and solve_board(self.model):
+            if self.rules.check_valid(val, (row, col)) and self.rules.solve_board():
                 return True
 
             else:

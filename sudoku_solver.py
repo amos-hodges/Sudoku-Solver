@@ -1,11 +1,12 @@
 #################
 # Soduko Solver #
 #################
-import random
+
 ## Amos Hodges ##
 
 # functions for validating a given entry and solving the board
 
+import random
 # test board
 # each list represents horizontal row
 # 0 represents empty space
