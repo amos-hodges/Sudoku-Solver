@@ -136,17 +136,50 @@ class Sudoku:
             if i % 3 == 0:
                 self.fill_3x3_box(mod, i, i+3)
 
-    # !need to make sure empty board has correct dimmensions
+    # similar to solve except random numbers are tried instead of iterating 1-9
+    def gen_full_board(self, mod):
+        for row in range(len(mod)):
+            for col in range(len(mod[row])):
+                if mod[row][col] == 0:
+                    num = random.randint(1, 9)
+
+                    if self.check_valid(mod, num, (row, col)):
+                        mod[row][col] = num
+
+                    if self.solve_board(mod):
+                        self.gen_full_board
+
+                    mod[row][col] = 0
+
+        return False
+
+    def num_solutions(self, mod, row, col):
+        for n in range(1, 10):
+            if self.check_valid(mod, n, (row, col)):
+                mod[row][col] = n
+
+                if self.solve_board(mod):
+                    return mod
+
+                mod[row][col] = 0
+
+        return False
+
     def reset_board(self, mod):
-        mod = [[[0 for j in range(9)] for i in range(9)]]
+        mod = [[0 for j in range(9)] for i in range(9)]
         return mod
 
 # test functionality
 
-# def main():
 
-#     b = Sudoku()
-#     b.print_board()
+def main():
+
+    b = Sudoku()
+    my_board = b.board_model
+    my_board = b.reset_board(my_board)
+    b.gen_random_seed(my_board)
+    b.gen_full_board(my_board)
+    b.print_board(my_board)
 
 
-# main()
+main()
