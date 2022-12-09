@@ -61,9 +61,9 @@ class Sudoku:
             row, col = find
 
         for i in range(1, 10):
-            if self.check_valid(i, (row, col)):
+            if self.check_valid(mod, i, (row, col)):
 
-                self.board_model[row][col] = i
+                mod[row][col] = i
                 # recursively checks the current board by calling solve_board until check valid returns false
                 # then steps back the the previous iteration
                 if self.solve_board(mod):

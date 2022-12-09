@@ -128,7 +128,7 @@ class Grid:
             gap = self.width / 9
             x = pos[0] // gap
             y = pos[1] // gap
-            return (int(x), int(y))
+            return (int(y), int(x))
         else:
             return None
 
@@ -212,18 +212,17 @@ class Game():
         pygame.init()
         pygame.display.set_caption("Sudoku Solver")
 
-        # state of program
         self.running = True
-        # state of game (solver or play)
         self.playing = False
-        # game colors
+        self.mode = 'playing'
+
         self.black, self.white, self.grey, self.dark_grey = (
             0, 0, 0), (255, 255, 255), (128, 128, 128), (80, 80, 80)
-        # game fonts
         self.title_font = pygame.font.SysFont('Corbel', 80)
         self.reg_font = pygame.font.SysFont('Corbel', 20)
         self.small_font = pygame.font.SysFont('Corbel', 30)
-        #display and buttons
+        self.misc_font = pygame.font.SysFont(None, 40)
+
         self.display_width = 540
         self.display_height = 600
         self.display = pygame.Surface(
@@ -240,7 +239,10 @@ class Game():
         # self.again_menu
         # self.stats_menu
         self.curr_menu = self.main_menu
-        self.test = ['Undo', 'Hint', 'Solve']
+        self.play_options = ['Undo', 'Hint', 'Solve']
+        self.solve_options = ['Undo', 'Step', 'Solve']
+
+        self.username = 'test'
 
         self.key = None
 
@@ -258,17 +260,22 @@ class Game():
         surface.blit(textobj, textrect)
 
 # MAke genecric function to display text options based on which class is using it
-    def create_buttons(self, options):
+    def create_buttons(self):
+
+        if self.mode == 'playing':
+            options = self.play_options
+        if self.mode == 'solving':
+            options = self.solve_options
 
         self.undo_btn = pygame.Rect(
             5, self.display_width+6, self.button_width, self.button_height)
-        self.hint_butn = pygame.Rect(
+        self.mid_butn = pygame.Rect(
             self.button_width+15, self.display_width+6, self.button_width, self.button_height)
         self.solve_btn = pygame.Rect(
             (self.button_width*2)+25, self.display_width+6, self.button_width, self.button_height)
 
         pygame.draw.rect(self.window, self.grey, self.undo_btn)
-        pygame.draw.rect(self.window, self.grey, self.hint_butn)
+        pygame.draw.rect(self.window, self.grey, self.mid_butn)
         pygame.draw.rect(self.window, self.grey, self.solve_btn)
         for i in range(1, 6, 2):
 
@@ -340,33 +347,7 @@ class Game():
     def draw_window(self):
         self.window.fill(self.white)
         self.board.draw(self.window)
-        self.create_buttons(self.test)
-
-
-# game class for playing generated sudoku games
-
-
-class Play(Game):
-    def __init__(self):
-        Game.__init__()
-        self.state = 'Playing'
-        self.options = ['Undo', 'Hint', 'Solve']
-
-    def draw_game_window(self):
-        pass
-
-
-# game class for solving user entered puzzle
-
-
-class Solve(Game):
-    def __init__(self):
-        Game.__init__()
-        self.state = 'Solving'
-        self.options = ['Undo', 'Step', 'Solve']
-
-    def draw_solve_window(self):
-        pass
+        self.create_buttons()
 
 
 def main():
