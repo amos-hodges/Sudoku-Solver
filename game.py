@@ -7,15 +7,14 @@
 # GUI created using validate and solve functions
 
 ### TO DO: ###
-# -finish creating separate Game() class children for Solve() and Play()
-# -check for unused variables and simplify
-# -impliment undo, help/step , and solve buttons
+#
+# -check for unused variables, consolidate and simplify
+# -impliment undo, help/step , and solve buttons (will need to work in tandem with sudoku class)
 
 import pygame
-#from sudoku_solver import check_valid, solve_board, print_board
 from sudoku import *
 from menu import *
-import time
+#import time
 pygame.init()
 
 # End goal:
@@ -237,13 +236,12 @@ class Game():
         self.main_menu = MainMenu(self)
         self.diff_menu = DiffMenu(self)
         self.again_menu = AgainMenu(self)
-        # self.stats_menu
+        #self.stats_menu = Stats(self)
         self.curr_menu = self.main_menu
         self.play_options = ['Undo', 'Hint', 'Solve']
         self.solve_options = ['Undo', 'Step', 'Solve']
 
         self.username = ''
-
         self.key = None
 
     def game_loop(self):
@@ -258,9 +256,6 @@ class Game():
         textrect = textobj.get_rect()
         textrect.topleft = (x - (text_width/2), y)
         surface.blit(textobj, textrect)
-
-
-# MAke genecric function to display text options based on which class is using it
 
     def create_buttons(self):
 
@@ -341,7 +336,7 @@ class Game():
                     if clicked:
                         self.board.select(clicked[0], clicked[1])
                         self.key = None
-                # click on button
+                # clicking spaces between bottons and board will do nothing
                 else:
                     print('clicking a button')
         if self.board.selected and self.key != None:
@@ -359,9 +354,6 @@ def main():
 
     while solver.running:
         solver.curr_menu.display_menu()
-
-        # solver.main_menu.display_menu()
-        # solver.diff_menu.display_menu()
         solver.game_loop()
 
 

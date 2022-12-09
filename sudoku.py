@@ -76,7 +76,6 @@ class Sudoku:
     def check_valid(self, mod, num, pos):
 
         # check row
-
         for i in range(len(mod[0])):
             # check every element in the given row(pos[0]) except the current element (pos[1])
             if mod[pos[0]][i] == num and pos[1] != i:
@@ -101,7 +100,7 @@ class Sudoku:
         return True
 
     def print_board(self, mod):
-        print(len(mod))
+
         for i in range(len(mod)):
             # prints horizontal line after 3rd and 6th row
             if i % 3 == 0 and i != 0:
@@ -137,12 +136,12 @@ class Sudoku:
             if i % 3 == 0:
                 self.fill_3x3_box(mod, i, i+3)
 
+    # !need to make sure empty board has correct dimmensions
     def reset_board(self, mod):
         mod = [[[0 for j in range(9)] for i in range(9)]]
         return mod
 
 # test functionality
-
 
 # def main():
 

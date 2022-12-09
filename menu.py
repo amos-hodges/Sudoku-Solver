@@ -7,7 +7,8 @@
 ## menu classes #
 
 ### TO DO: ###
-# -finish menus for play/solve again and stats page
+# -finish menu stats page
+# -consolidate redundant methods to the parent class
 # -once game classes are complete make sure selection
 #  & escape sequences are correct
 
@@ -116,14 +117,12 @@ class MainMenu(Menu):
 
 # Enter username / select difficulty
 
+### Still needs: ###
+# -three separate options for difficulty
 
 class DiffMenu(Menu):
     def __init__(self, game):
         Menu.__init__(self, game)
-        # self.active_color = (200, 200, 200)
-        # self.passive_color = (150, 150, 150)
-        # self.curr_color = self.passive_color
-        # self.text_active = False
 
     def create_menu(self):
 
@@ -133,22 +132,19 @@ class DiffMenu(Menu):
                             self.game.window, self.middle_w, 100)
         self.game.draw_text('Select difficulty:', self.game.small_font, self.game.white,
                             self.game.window, self.middle_w, 250)
-        # Need text input to be stored
+
         self.usr_input = pygame.Rect(
             self.center_w, 150, self.button_width, self.button_height)
-
         self.play_btn = pygame.Rect(
             self.center_w, 450, self.button_width, self.button_height)
+
         self.get_color()
-        # if self.text_active:
-        #     self.curr_color = self.active_color
-        # else:
-        #     self.curr_color = self.passive_color
+
         pygame.draw.rect(self.game.window, self.curr_color, self.usr_input)
         pygame.draw.rect(self.game.window, self.game.dark_grey, self.play_btn)
+
         self.game.draw_text(self.game.username, self.game.misc_font, self.game.black,
                             self.game.window, self.middle_w, 150+(self.button_height/2)-10)
-
         self.game.draw_text('Play', self.game.small_font, self.game.white,
                             self.game.window, self.middle_w, 450+(self.button_height/2)-15)
 
@@ -157,34 +153,8 @@ class DiffMenu(Menu):
         while self.run_display:
             self.create_menu()
             self.get_click()
-
             self.check_events()
-            # self.check_input()
-            # pygame.display.flip()
             pygame.display.update()
-
-     # special event check for user input, only neccesary on username menu
-
-    def check_input(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-
-                if self.click_active:
-                    if event.key == pygame.K_BACKSPACE:
-                        self.game.username = self.game.username[:-1]
-                    else:
-                        if len(self.game.username) <= 15:
-                            self.game.username += event.unicode
-                            # print(len(self.game.username))
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                # left click
-                if event.button == 1:
-                    self.click = True
 
     def get_click(self):
 
@@ -194,6 +164,7 @@ class DiffMenu(Menu):
                 print('Working: play game')
                 self.game.playing = True
                 self.run_display = False
+
         # NEED: click event for setting difficulty
 
         if self.click:
@@ -204,6 +175,8 @@ class DiffMenu(Menu):
                 self.click_active = False
 
         self.click = False
+
+# Transition menu to play/solve again
 
 
 class AgainMenu(Menu):
@@ -228,6 +201,7 @@ class AgainMenu(Menu):
 
     def create_menu(self):
         self.get_mode()
+
         self.game.window.fill(self.game.grey)
 
         self.game.draw_text(self.mode_string, self.game.title_font, self.game.white,
@@ -237,13 +211,16 @@ class AgainMenu(Menu):
             self.middle_w-self.btn_w-10, 300, self.btn_w, self.button_height)
         self.no_btn = pygame.Rect(
             self.middle_w+10, 300, self.btn_w, self.button_height)
+
         if self.curr_btn == 'y':
             pygame.draw.rect(self.game.window,
                              self.curr_color, self.yes_btn)
         if self.curr_btn == 'n':
             pygame.draw.rect(self.game.window,
                              self.curr_color, self.no_btn)
+
         self.get_color()
+
         self.game.draw_text('Yes', self.game.small_font, self.game.white,
                             self.game.window, self.middle_w-(self.btn_w/2)-10, 300+(self.button_height/2)-15)
         self.game.draw_text('No', self.game.small_font, self.game.white,
@@ -268,7 +245,6 @@ class AgainMenu(Menu):
                 self.click_active = True
                 # pygame.quit()
 
-        # NEED: click event for setting difficulty
         if self.yes_btn.collidepoint((mx, my)):
             self.curr_btn = 'y'
             if self.click:
