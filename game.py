@@ -236,13 +236,13 @@ class Game():
 
         self.main_menu = MainMenu(self)
         self.diff_menu = DiffMenu(self)
-        # self.again_menu
+        self.again_menu = AgainMenu(self)
         # self.stats_menu
         self.curr_menu = self.main_menu
         self.play_options = ['Undo', 'Hint', 'Solve']
         self.solve_options = ['Undo', 'Step', 'Solve']
 
-        self.username = 'test'
+        self.username = ''
 
         self.key = None
 
@@ -259,7 +259,9 @@ class Game():
         textrect.topleft = (x - (text_width/2), y)
         surface.blit(textobj, textrect)
 
+
 # MAke genecric function to display text options based on which class is using it
+
     def create_buttons(self):
 
         if self.mode == 'playing':
@@ -328,6 +330,7 @@ class Game():
                         self.key = None
 
                         if self.board.is_finished():
+                            self.curr_menu = self.again_menu
                             self.running = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
