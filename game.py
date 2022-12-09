@@ -55,20 +55,19 @@ class Grid:
 
         self.rows = rows
         self.cols = cols
-        self.width = width
-        self.height = height
 
         # conver to function that sets the board based on the game mode
-        self.rules = Sudoku()
+        self.game_play = Sudoku()
 
-        # uncomment for blank board inialized in sudoku class
-        self.board = self.rules.board
+        self.board = self.game_play.board_model
+        self.model = None
 
         # initialize squares
         self.squares = [[Square(self.board[i][j], i, j, width, height)
                          for j in range(cols)] for i in range(rows)]
-        # to store and update array representation of the board in order to use check_valid and solve_board
-        self.model = None
+
+        self.width = width
+        self.height = height
         # to store the coordinates of the currently selected square
         self.selected = None
 
@@ -89,7 +88,7 @@ class Grid:
             self.squares[row][col].set(val)
             self.update_model()
 
-            if self.rules.check_valid(val, (row, col)) and self.rules.solve_board():
+            if self.game_play.check_valid(self.model, val, (row, col)) and self.game_play.solve_board(self.model):
                 return True
 
             else:
@@ -156,8 +155,6 @@ class Grid:
                              (self.width, i*gap), thickness)
             pygame.draw.line(win, (0, 0, 0), (i*gap, 0),
                              (i*gap, self.height - gap), thickness)
-            # pygame.draw.line(win, (0, 0, 0), (i*gap, 0),
-            #                 (i*gap, self.height), thickness)
 
             # draw squares
         for i in range(self.rows):
@@ -185,8 +182,8 @@ class Square:
         temp_font = pygame.font.SysFont("timesnewroman", 20)
 
         gap = self.width / 9
-        x = self.row * gap
-        y = self.col * gap
+        x = self.col * gap
+        y = self.row * gap
 
         if self.temp != 0 and self.value == 0:
             txt = temp_font.render(str(self.temp), 1, (128, 128, 128))
@@ -318,6 +315,7 @@ class Game():
                         # undo button to take away last move?
                         if self.board.place(self.board.squares[i][j].temp):
                             print('Correct move')
+
                         else:
                             print('Not correct')
                         self.key = None
@@ -343,6 +341,7 @@ class Game():
         self.window.fill(self.white)
         self.board.draw(self.window)
         self.create_buttons(self.test)
+
 
 # game class for playing generated sudoku games
 
@@ -373,10 +372,7 @@ class Solve(Game):
 def main():
 
     solver = Game()
-    # gen = Generator('solver')
-    # gen.generate_puzzle()
-    # solve_board(gen.game_board)
-    # print_board(gen.game_board)
+
     while solver.running:
         solver.curr_menu.display_menu()
 
