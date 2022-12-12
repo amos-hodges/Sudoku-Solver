@@ -21,9 +21,9 @@ import random
 
 class Sudoku:
 
-    def __init__(self, difficulty=None):
+    def __init__(self, difficulty):
         self.difficulty = difficulty
-
+        print(self.difficulty)
         # initialize board based on difficulty/mode
         # accepts board model from grid class
 
@@ -38,7 +38,7 @@ class Sudoku:
             [1, 2, 0, 0, 0, 7, 4, 0, 0],
             [0, 4, 9, 2, 0, 6, 0, 0, 7]
         ]
-
+        self.get_diff()
         # self.board_model = [
         #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
         #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -50,6 +50,17 @@ class Sudoku:
         #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
         #     [1, 2, 3, 4, 5, 6, 7, 8, 9]
         # ]
+
+    def get_diff(self):
+        print(self.difficulty)
+        if self.difficulty == 'Easy':
+            print('generating easy board')
+        if self.difficulty == 'Medium':
+            print('generating medium board')
+        if self.difficulty == 'Hard':
+            print('generating hard board')
+        else:
+            print('Difficulty not set')
 
     def solve_board(self, mod):
 
@@ -172,14 +183,14 @@ class Sudoku:
 # test functionality
 
 
-def main():
+# def main():
 
-    b = Sudoku()
-    my_board = b.board_model
-    my_board = b.reset_board(my_board)
-    b.gen_random_seed(my_board)
-    b.gen_full_board(my_board)
-    b.print_board(my_board)
+#     b = Sudoku()
+#     my_board = b.board_model
+#     my_board = b.reset_board(my_board)
+#     b.gen_random_seed(my_board)
+#     b.gen_full_board(my_board)
+#     b.print_board(my_board)
 
 
-main()
+# main()

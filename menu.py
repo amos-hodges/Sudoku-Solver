@@ -30,9 +30,11 @@ class Menu():
         self.active_color = (200, 200, 200)
         self.passive_color = (150, 150, 150)
         self.curr_color = self.passive_color
+
         self.click_active = False
 
     # need escape key to only quit game from main menu
+
     def check_events(self):
 
         for event in pygame.event.get():
@@ -60,12 +62,15 @@ class Menu():
             self.curr_color = self.active_color
         else:
             self.curr_color = self.passive_color
+
 # Main Menu / Title Page
 
 
 class MainMenu(Menu):
+
     def __init__(self, game):
         Menu.__init__(self, game)
+        print('Init Main Menu')
 
     def create_menu(self):
 
@@ -123,28 +128,49 @@ class MainMenu(Menu):
 class DiffMenu(Menu):
     def __init__(self, game):
         Menu.__init__(self, game)
+        print('Init diff Menu')
 
     def create_menu(self):
 
         self.game.window.fill(self.game.grey)
-
         self.game.draw_text('Enter Username:', self.game.small_font, self.game.white,
                             self.game.window, self.middle_w, 100)
         self.game.draw_text('Select difficulty:', self.game.small_font, self.game.white,
-                            self.game.window, self.middle_w, 250)
-
+                            self.game.window, self.middle_w, 240)
+        # username input
         self.usr_input = pygame.Rect(
             self.center_w, 150, self.button_width, self.button_height)
+        # difficulty
+        self.easy_btn = pygame.Rect(
+            self.middle_w-self.button_width/4, 280, self.button_width/2, self.button_height-15)
+        self.med_btn = pygame.Rect(
+            self.middle_w-self.button_width/4, 320, self.button_width/2, self.button_height-15)
+        self.hard_btn = pygame.Rect(
+            self.middle_w-self.button_width/4, 360, self.button_width/2, self.button_height-15)
+        # play button
         self.play_btn = pygame.Rect(
             self.center_w, 450, self.button_width, self.button_height)
 
         self.get_color()
 
         pygame.draw.rect(self.game.window, self.curr_color, self.usr_input)
+        pygame.draw.rect(self.game.window, self.game.dark_grey, self.easy_btn)
+        pygame.draw.rect(self.game.window, self.game.dark_grey, self.med_btn)
+        pygame.draw.rect(self.game.window, self.game.dark_grey, self.hard_btn)
         pygame.draw.rect(self.game.window, self.game.dark_grey, self.play_btn)
+
+        # username input
 
         self.game.draw_text(self.game.username, self.game.misc_font, self.game.black,
                             self.game.window, self.middle_w, 150+(self.button_height/2)-10)
+        # difficulty
+        self.game.draw_text('Easy', self.game.reg_font, self.game.white,
+                            self.game.window, self.middle_w, 287)
+        self.game.draw_text('Medium', self.game.reg_font, self.game.white,
+                            self.game.window, self.middle_w, 327)
+        self.game.draw_text('Hard', self.game.reg_font, self.game.white,
+                            self.game.window, self.middle_w, 367)
+        # play button
         self.game.draw_text('Play', self.game.small_font, self.game.white,
                             self.game.window, self.middle_w, 450+(self.button_height/2)-15)
 
@@ -166,14 +192,24 @@ class DiffMenu(Menu):
                 self.run_display = False
 
         # NEED: click event for setting difficulty
+        if self.easy_btn.collidepoint((mx, my)):
+            if self.click:
+                self.game.difficulty = 'Easy'
+                print('Selected easy')
+        if self.med_btn.collidepoint((mx, my)):
+            if self.click:
+                self.game.difficulty = 'Medium'
+                print('Selected medium')
+        if self.hard_btn.collidepoint((mx, my)):
+            if self.click:
+                self.game.difficulty = 'Hard'
+                print('Selected Hard')
 
         if self.click:
             if self.usr_input.collidepoint((mx, my)):
-
                 self.click_active = True
             else:
                 self.click_active = False
-
         self.click = False
 
 # Transition menu to play/solve again

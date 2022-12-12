@@ -50,14 +50,13 @@ class Grid:
     # next step: write method to randomly generate solvable states
     # allow user to enter a board manually to solve, or select from ease, medium, hard
 
-    def __init__(self, rows, cols, width, height):
+    def __init__(self, rows, cols, width, height, difficulty):
 
         self.rows = rows
         self.cols = cols
-
+        self.board_diff = difficulty
         # conver to function that sets the board based on the game mode
-        self.game_play = Sudoku()
-
+        self.game_play = Sudoku(difficulty)
         self.board = self.game_play.board_model
         self.model = None
 
@@ -214,7 +213,7 @@ class Game():
         self.running = True
         self.playing = False
         self.mode = 'playing'
-
+        self.difficulty = 'Easy'
         self.black, self.white, self.grey, self.dark_grey = (
             0, 0, 0), (255, 255, 255), (128, 128, 128), (80, 80, 80)
         self.title_font = pygame.font.SysFont('Corbel', 80)
@@ -229,7 +228,7 @@ class Game():
         self.window = pygame.display.set_mode(
             (self.display_width, self.display_height))
         self.board = Grid(9, 9, self.display_width,
-                          self.display_height)
+                          self.display_height, self.difficulty)
         self.button_width = (self.display_width/3)-10
         self.button_height = (self.display_height-self.display_width)-10
 
