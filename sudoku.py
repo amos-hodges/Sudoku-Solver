@@ -21,9 +21,8 @@ import random
 
 class Sudoku:
 
-    def __init__(self, difficulty):
+    def __init__(self, difficulty=None):
         self.difficulty = difficulty
-        print(self.difficulty)
         # initialize board based on difficulty/mode
         # accepts board model from grid class
 
@@ -38,7 +37,9 @@ class Sudoku:
             [1, 2, 0, 0, 0, 7, 4, 0, 0],
             [0, 4, 9, 2, 0, 6, 0, 0, 7]
         ]
-        self.get_diff()
+
+        self.copy_board = []
+        # self.get_diff()
         # self.board_model = [
         #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
         #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -51,15 +52,19 @@ class Sudoku:
         #     [1, 2, 3, 4, 5, 6, 7, 8, 9]
         # ]
 
-    def get_diff(self):
-        print(self.difficulty)
+    def get_board_diff(self):
+
         if self.difficulty == 'Easy':
             print('generating easy board')
         if self.difficulty == 'Medium':
             print('generating medium board')
         if self.difficulty == 'Hard':
             print('generating hard board')
-        else:
+        if self.difficulty == 'Solving':
+            print('Generating empty board')
+            self.board_model = self.reset_board(self.board_model)
+        elif self.difficulty == '':
+
             print('Difficulty not set')
 
     def solve_board(self, mod):
@@ -163,8 +168,9 @@ class Sudoku:
                     mod[row][col] = 0
 
         return False
+    # same as solve board but takes a starting position
 
-    def num_solutions(self, mod, row, col):
+    def solve_at_pos(self, mod, row, col):
         for n in range(1, 10):
             if self.check_valid(mod, n, (row, col)):
                 mod[row][col] = n
@@ -175,6 +181,36 @@ class Sudoku:
                 mod[row][col] = 0
 
         return False
+    # same as find empty but returns the empty cell specified by n
+
+    def find_Nth_empty(self, mod, n):
+        i = 1
+        for row in range(len(mod)):
+            for col in range(len(mod[row])):
+                if mod[row][col] == 0:
+                    if i == n:
+                        return (row, col)
+                    i += 1
+        return False
+    # uses find_nth_empty() and solve_at_pos() to solve from every empty spot on the board
+    # generates a list of all different solutions
+
+    def find_num_solutions(self, mod):
+        x = 0
+        solutions = []
+        for row in range(len(mod)):
+            for col in range(len(mod[row])):
+                if mod[row][col] == 0:
+                    x += 1
+        for i in range(1, x+1):
+
+            self.copy_board = mod
+
+            row, col = self.find_Nth_empty(self.copy_board, i)
+            copy_sol = self.solve_at_pos(self.copy_board, row, col)
+            solutions.append(copy_sol)
+
+        return list(set(solutions))
 
     def reset_board(self, mod):
         mod = [[0 for j in range(9)] for i in range(9)]
@@ -183,14 +219,17 @@ class Sudoku:
 # test functionality
 
 
-# def main():
+def main():
 
-#     b = Sudoku()
-#     my_board = b.board_model
-#     my_board = b.reset_board(my_board)
-#     b.gen_random_seed(my_board)
-#     b.gen_full_board(my_board)
-#     b.print_board(my_board)
+    b = Sudoku()
+    my_board = b.board_model
+    # my_board = b.reset_board(my_board)
+    # b.gen_random_seed(my_board)
+    # b.gen_full_board(my_board)
+    # b.print_board(my_board)
+
+    sols = b.find_num_solutions(my_board)
+    print(sols)
 
 
-# main()
+main()

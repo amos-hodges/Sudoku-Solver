@@ -70,7 +70,6 @@ class MainMenu(Menu):
 
     def __init__(self, game):
         Menu.__init__(self, game)
-        print('Init Main Menu')
 
     def create_menu(self):
 
@@ -113,7 +112,10 @@ class MainMenu(Menu):
                 self.run_display = False
             if self.solve_puz_btn.collidepoint((mx, my)):
                 # testing other menus, eventually just links to blank board
-                self.game.curr_menu = self.game.again_menu
+                self.game.difficulty = 'Solving'
+                self.game.get_diff()
+                self.game.playing = True
+                #self.game.curr_menu = self.game.again_menu
                 self.game.mode = 'solving'
                 self.run_display = False
                 #self.game.playing = True
@@ -128,7 +130,6 @@ class MainMenu(Menu):
 class DiffMenu(Menu):
     def __init__(self, game):
         Menu.__init__(self, game)
-        print('Init diff Menu')
 
     def create_menu(self):
 
@@ -188,6 +189,7 @@ class DiffMenu(Menu):
         if self.play_btn.collidepoint((mx, my)):
             if self.click:
                 print('Working: play game')
+                self.game.get_diff()
                 self.game.playing = True
                 self.run_display = False
 

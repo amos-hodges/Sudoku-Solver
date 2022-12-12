@@ -54,7 +54,6 @@ class Grid:
 
         self.rows = rows
         self.cols = cols
-        self.board_diff = difficulty
         # conver to function that sets the board based on the game mode
         self.game_play = Sudoku(difficulty)
         self.board = self.game_play.board_model
@@ -345,6 +344,11 @@ class Game():
         self.window.fill(self.white)
         self.board.draw(self.window)
         self.create_buttons()
+    # method to reinitialize board based on difficulty
+
+    def get_diff(self):
+        self.board = Grid(9, 9, self.display_width,
+                          self.display_height, self.difficulty)
 
 
 def main():
