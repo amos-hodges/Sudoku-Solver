@@ -17,16 +17,17 @@
 # -create function for backtracking animation
 
 import random
+import copy
 
 
 class Sudoku:
 
-    def __init__(self, difficulty=None):
+    def __init__(self, difficulty):
         self.difficulty = difficulty
-        # initialize board based on difficulty/mode
-        # accepts board model from grid class
-
-        self.board_model = [
+        self.empty_squares = 0
+        self.reset_board()
+        self.populate_board()
+        self.default = [
             [7, 8, 0, 4, 0, 0, 1, 2, 0],
             [6, 0, 0, 0, 7, 5, 0, 0, 9],
             [0, 0, 0, 6, 0, 1, 0, 7, 8],
@@ -38,38 +39,23 @@ class Sudoku:
             [0, 4, 9, 2, 0, 6, 0, 0, 7]
         ]
 
-        self.copy_board = []
-        # self.get_diff()
-        # self.board_model = [
-        #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        #     [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        #     [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        # ]
-
     def get_board_diff(self):
 
         if self.difficulty == 'Easy':
-            print('generating easy board')
+            self.empty_squares = 30
         if self.difficulty == 'Medium':
-            print('generating medium board')
+            self.empty_squares = 42
         if self.difficulty == 'Hard':
-            print('generating hard board')
+            self.empty_squares = 50
         if self.difficulty == 'Solving':
-            print('Generating empty board')
-            self.board_model = self.reset_board(self.board_model)
+            self.empty_squares = 0
+            self.reset_board()
         elif self.difficulty == '':
+            print('Error: difficulty not set')
 
-            print('Difficulty not set')
+    def solve_board(self):
 
-    def solve_board(self, mod):
-
-        find = self.find_empty(mod)
+        find = self.find_empty()
         # board is full if no empty spots are found
         if not find:
             return True
@@ -77,30 +63,30 @@ class Sudoku:
             row, col = find
 
         for i in range(1, 10):
-            if self.check_valid(mod, i, (row, col)):
+            if self.check_valid(i, (row, col)):
 
-                mod[row][col] = i
+                self.board[row][col] = i
                 # recursively checks the current board by calling solve_board until check valid returns false
                 # then steps back the the previous iteration
-                if self.solve_board(mod):
+                if self.solve_board():
                     return True
                 # resets the empty spot so it can be tried again
-                mod[row][col] = 0
+                self.board[row][col] = 0
 
         return False
 
-    def check_valid(self, mod, num, pos):
+    def check_valid(self, num, pos):
 
         # check row
-        for i in range(len(mod[0])):
+        for i in range(len(self.board[0])):
             # check every element in the given row(pos[0]) except the current element (pos[1])
-            if mod[pos[0]][i] == num and pos[1] != i:
+            if self.board[pos[0]][i] == num and pos[1] != i:
                 return False
 
         # check column
-        for i in range(len(mod[0])):
+        for i in range(len(self.board[0])):
             # check every element in the given column(pos[1]) except the current element (pos[0])
-            if mod[i][pos[1]] == num and pos[0] != i:
+            if self.board[i][pos[1]] == num and pos[0] != i:
                 return False
 
         box_x = pos[1] // 3
@@ -110,75 +96,76 @@ class Sudoku:
         for i in range(box_y*3, box_y*3 + 3):
             for j in range(box_x*3, box_x*3 + 3):
                 # check every element in the given box except the element at i,j
-                if mod[i][j] == num and (i, j) != pos:
+                if self.board[i][j] == num and (i, j) != pos:
                     return False
 
         return True
 
-    def print_board(self, mod):
+    def print_board(self):
 
-        for i in range(len(mod)):
+        for i in range(len(self.board)):
             # prints horizontal line after 3rd and 6th row
             if i % 3 == 0 and i != 0:
                 print("- - - - - - - - - - - - - ")
-            for j in range(len(mod[0])):
+            for j in range(len(self.board[0])):
                 # prints veritcal bar after every 3rd and 6th element in each row
                 if j % 3 == 0 and j != 0:
                     print(" | ", end="")
                 # last element in each row
                 if j == 8:
-                    print(mod[i][j])
+                    print(self.board[i][j])
                 # every other element, emtpy char instead of newline to keep everything on one line
                 else:
-                    print(str(mod[i][j]) + " ", end="")
+                    print(str(self.board[i][j]) + " ", end="")
 
-    def find_empty(self, mod):
-        for i in range(len(mod)):
-            for j in range(len(mod[0])):
-                if mod[i][j] == 0:
+    def find_empty(self):
+        for i in range(len(self.board)):
+            for j in range(len(self.board[0])):
+                if self.board[i][j] == 0:
                     return (i, j)
         return None
 
-    def fill_3x3_box(self, mod, lo, hi):
+    def fill_3x3_box(self, lo, hi):
         l = list(range(1, 10))
         for row in range(lo, hi):
             for col in range(lo, hi):
                 num = random.choice(l)
-                mod[row][col] = num
+                self.board[row][col] = num
                 l.remove(num)
 
-    def gen_random_seed(self, mod):
+    def gen_random_seed(self):
         for i in range(9):
             if i % 3 == 0:
-                self.fill_3x3_box(mod, i, i+3)
+                self.fill_3x3_box(i, i+3)
 
     # similar to solve except random numbers are tried instead of iterating 1-9
-    def gen_full_board(self, mod):
-        for row in range(len(mod)):
-            for col in range(len(mod[row])):
-                if mod[row][col] == 0:
+
+    def gen_full_board(self):
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                if self.board[row][col] == 0:
                     num = random.randint(1, 9)
 
-                    if self.check_valid(mod, num, (row, col)):
-                        mod[row][col] = num
+                    if self.check_valid(num, (row, col)):
+                        self.board[row][col] = num
 
-                    if self.solve_board(mod):
-                        self.gen_full_board
+                    if self.solve_board():
+                        self.gen_full_board()
 
-                    mod[row][col] = 0
+                    self.board[row][col] = 0
 
         return False
     # same as solve board but takes a starting position
 
-    def solve_at_pos(self, mod, row, col):
+    def solve_at_pos(self, row, col):
         for n in range(1, 10):
-            if self.check_valid(mod, n, (row, col)):
-                mod[row][col] = n
+            if self.check_valid(n, (row, col)):
+                self.board[row][col] = n
 
-                if self.solve_board(mod):
-                    return mod
+                if self.solve_board():
+                    return self.board
 
-                mod[row][col] = 0
+                self.board[row][col] = 0
 
         return False
     # same as find empty but returns the empty cell specified by n
@@ -195,41 +182,94 @@ class Sudoku:
     # uses find_nth_empty() and solve_at_pos() to solve from every empty spot on the board
     # generates a list of all different solutions
 
-    def find_num_solutions(self, mod):
+    def find_num_solutions(self):
         x = 0
         solutions = []
-        for row in range(len(mod)):
-            for col in range(len(mod[row])):
-                if mod[row][col] == 0:
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                if self.board[row][col] == 0:
                     x += 1
         for i in range(1, x+1):
 
-            self.copy_board = mod
+            copy_board = copy.deepcopy(self)
 
-            row, col = self.find_Nth_empty(self.copy_board, i)
-            copy_sol = self.solve_at_pos(self.copy_board, row, col)
+            row, col = self.find_Nth_empty(copy_board.board, i)
+            copy_sol = copy_board.solve_at_pos(row, col)
+
+            copy_sol = tuple(tuple(sub) for sub in copy_sol)
             solutions.append(copy_sol)
+        return set(solutions)
 
-        return list(set(solutions))
+    def tuple_to_list(self, li):
+        return list(list(sub for sub in li))
 
-    def reset_board(self, mod):
-        mod = [[0 for j in range(9)] for i in range(9)]
-        return mod
+    def return_solutions(self, li):
+        for l in li:
+            l = self.tuple_to_list(l)
+            # comment out
+            self.print_board(l)
+
+    def remove_nums(self, row_col_lo, row_col_hi):
+        row = random.randint(row_col_lo, row_col_hi)
+        col = random.randint(row_col_lo, row_col_hi)
+        if self.board[row][col] != 0:
+            self.board[row][col] = 0
+
+    def generate_board(self):
+
+        self.get_board_diff()
+
+        c = 0
+        while c < 4:
+            self.remove_nums(0, 2)
+            c += 1
+        c = 0
+        while c < 4:
+            self.remove_nums(3, 5)
+            c += 1
+        c = 0
+        while c < 4:
+            self.remove_nums(6, 8)
+            c += 1
+        self.empty_squares -= 12
+        c = 0
+        while c < self.empty_squares:
+            row = random.randint(0, 8)
+            col = random.randint(0, 8)
+
+            if self.board[row][col] != 0:
+                cur_num = self.board[row][col]
+                self.board[row][col] = 0
+
+                if len(self.find_num_solutions()) != 1:
+                    self.board[row][col] = cur_num
+                    continue
+                c += 1
+
+        # return filled_board
+
+    def populate_board(self):
+        self.gen_random_seed()
+        self.gen_full_board()
+        self.generate_board()
+
+    def reset_board(self):
+        self.board = [[0 for j in range(9)] for i in range(9)]
+
+    def update(self, board_rep):
+        self.board = board_rep
+
 
 # test functionality
 
 
-def main():
+# def main():
 
-    b = Sudoku()
-    my_board = b.board_model
-    # my_board = b.reset_board(my_board)
-    # b.gen_random_seed(my_board)
-    # b.gen_full_board(my_board)
-    # b.print_board(my_board)
-
-    sols = b.find_num_solutions(my_board)
-    print(sols)
+#     b = Sudoku('Hard')
+#     b.gen_random_seed()
+#     b.gen_full_board()
+#     b.generate_board()
+#     b.print_board()
 
 
-main()
+# main()

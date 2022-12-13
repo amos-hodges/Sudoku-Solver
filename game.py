@@ -12,7 +12,8 @@
 # -impliment undo, help/step , and solve buttons (will need to work in tandem with sudoku class)
 
 import pygame
-from sudoku import *
+#from sudoku import *
+from sudoku_test import *
 from menu import *
 #import time
 pygame.init()
@@ -56,7 +57,7 @@ class Grid:
         self.cols = cols
         # conver to function that sets the board based on the game mode
         self.game_play = Sudoku(difficulty)
-        self.board = self.game_play.board_model
+        self.board = self.game_play.board
         self.model = None
 
         # initialize squares
@@ -83,15 +84,19 @@ class Grid:
         row, col = self.selected
         if self.squares[row][col].value == 0:
             self.squares[row][col].set(val)
-            self.update_model()
 
-            if self.game_play.check_valid(self.model, val, (row, col)) and self.game_play.solve_board(self.model):
+            self.update_model()
+            # if self.game_play.check_valid(self.model, val, (row, col)) and self.game_play.solve_board(self.model):
+            #     return True
+            self.game_play.update(self.model)
+            if self.game_play.check_valid(val, (row, col)) and self.game_play.solve_board():
                 return True
 
             else:
                 self.squares[row][col].set(0)
                 self.squares[row][col].set_temp(0)
                 self.update_model()
+                self.game_play.update(self.model)
                 return False
 
     def temp_guess(self, val):
