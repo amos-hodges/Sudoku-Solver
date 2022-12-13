@@ -95,19 +95,19 @@ class Sudoku:
             return True
         else:
             row, col = find
-        c = 0
+
         for i in range(1, 10):
             if self.check_valid(i, (row, col)):
 
                 self.board[row][col] = i
+
                 # recursively checks the current board by calling solve_board until check valid returns false
                 # then steps back the the previous iteration
                 if self.solve_board():
-                    self.solve_order[c] = i, (row, col)
+
                     return True
                 # resets the empty spot so it can be tried again
                 self.board[row][col] = 0
-
         return False
 
     def check_valid(self, num, pos):

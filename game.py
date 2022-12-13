@@ -14,6 +14,7 @@
 import pygame
 from sudoku import *
 from menu import *
+import time
 
 # pygame.init()
 
@@ -149,7 +150,16 @@ class Grid:
 
     def backtracking_solve(self):
 
-        pass
+        row, col = self.game_play.find_empty()
+
+        for i in range(1, 10):
+            self.squares[row][col].set(i)
+            self.update_model()
+            self.game_play.update(self.board)
+
+            time.sleep(.1)
+
+            print(f'placing {i} at ({row},{col})')
 
 
 class Square:
@@ -235,9 +245,13 @@ class Game():
         self.username = ''
         self.key = None
 
+        self.solve_clicked = False
+
     def game_loop(self):
         while self.playing:
             self.check_events()
+            if self.solve_clicked:
+                self.board.backtracking_solve()
             self.draw_window()
             pygame.display.update()
 
@@ -331,6 +345,9 @@ class Game():
                 # clicking spaces between bottons and board will do nothing
                 else:
                     print('clicking a button')
+                    self.solve_clicked = True
+                    self.key = None
+
         if self.board.selected and self.key != None:
             self.board.temp_guess(self.key)
 
@@ -338,6 +355,7 @@ class Game():
         self.window.fill(self.white)
         self.board.draw(self.window)
         self.create_buttons()
+
     # method to reinitialize board based on difficulty
 
     def get_diff(self):
