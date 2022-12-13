@@ -18,6 +18,7 @@
 
 import random
 import copy
+from time import time
 
 
 class Sudoku:
@@ -27,6 +28,7 @@ class Sudoku:
         self.empty_squares = 0
         self.reset_board()
         self.populate_board()
+        self.copy_board = []
         self.default = [
             [7, 8, 0, 4, 0, 0, 1, 2, 0],
             [6, 0, 0, 0, 7, 5, 0, 0, 9],
@@ -38,11 +40,21 @@ class Sudoku:
             [1, 2, 0, 0, 0, 7, 4, 0, 0],
             [0, 4, 9, 2, 0, 6, 0, 0, 7]
         ]
+        self.solve_order = {}
+    # testing
+
+    def performance(method):
+        def perf_wrapper(*args, **kwargs):
+            t1 = time()
+            method(*args, **kwargs)
+            t2 = time()
+            print(f'{method.__name__!r} executed in {(t2-t1):.4f}s')
+        return perf_wrapper
 
     def get_board_diff(self):
 
         if self.difficulty == 'Easy':
-            self.empty_squares = 30
+            self.empty_squares = 32
         if self.difficulty == 'Medium':
             self.empty_squares = 42
         if self.difficulty == 'Hard':
@@ -69,6 +81,29 @@ class Sudoku:
                 # recursively checks the current board by calling solve_board until check valid returns false
                 # then steps back the the previous iteration
                 if self.solve_board():
+                    return True
+                # resets the empty spot so it can be tried again
+                self.board[row][col] = 0
+
+        return False
+
+    def get_solve_order(self):
+
+        find = self.find_empty()
+        # board is full if no empty spots are found
+        if not find:
+            return True
+        else:
+            row, col = find
+        c = 0
+        for i in range(1, 10):
+            if self.check_valid(i, (row, col)):
+
+                self.board[row][col] = i
+                # recursively checks the current board by calling solve_board until check valid returns false
+                # then steps back the the previous iteration
+                if self.solve_board():
+                    self.solve_order[c] = i, (row, col)
                     return True
                 # resets the empty spot so it can be tried again
                 self.board[row][col] = 0
@@ -194,6 +229,7 @@ class Sudoku:
             copy_board = copy.deepcopy(self)
 
             row, col = self.find_Nth_empty(copy_board.board, i)
+
             copy_sol = copy_board.solve_at_pos(row, col)
 
             copy_sol = tuple(tuple(sub) for sub in copy_sol)
@@ -247,14 +283,16 @@ class Sudoku:
                 c += 1
 
         # return filled_board
-
+    @performance
     def populate_board(self):
         self.gen_random_seed()
         self.gen_full_board()
+        print(f'Populating {self.difficulty} board')
         self.generate_board()
 
     def reset_board(self):
         self.board = [[0 for j in range(9)] for i in range(9)]
+    # to update sudoku board attribute based on new entries to grid
 
     def update(self, board_rep):
         self.board = board_rep
@@ -263,13 +301,12 @@ class Sudoku:
 # test functionality
 
 
-# def main():
+def main():
 
-#     b = Sudoku('Hard')
-#     b.gen_random_seed()
-#     b.gen_full_board()
-#     b.generate_board()
-#     b.print_board()
+    b = Sudoku('Easy')
+
+    b.get_solve_order()
+    print(b.solve_order)
 
 
-# main()
+main()

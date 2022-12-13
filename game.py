@@ -12,21 +12,20 @@
 # -impliment undo, help/step , and solve buttons (will need to work in tandem with sudoku class)
 
 import pygame
-#from sudoku import *
-from sudoku_test import *
+from sudoku import *
 from menu import *
-#import time
-pygame.init()
+
+# pygame.init()
 
 # End goal:
 
 #   A menu interface that:
-# [ ]   1. allows the user to choose between playing sudoku and entering a puzzle to solve
+# [X]   1. allows the user to choose between playing sudoku and entering a puzzle to solve
 # [ ]   2. allows the player to enter their username to keep track of scores/stats
-# [ ]   3. if playing sudoku, the user can choose from easy, medium or hard and it will randomly generate
+# [X]   3. if playing sudoku, the user can choose from easy, medium or hard and it will randomly generate
 # [ ]    -until the window is closed, the program will keep track of how many puzzles are solves, the difficulty and the time for each
 # [ ]    -when the user is done the program will display the stats and highlight the best game
-# [ ]   4. if solving sudoku the user can enter numbers on a blank board
+# [X]   4. if solving sudoku the user can enter numbers on a blank board
 # [ ]    -the display will indicate which row, column or box if an entry has a conflict
 # [ ]    -the user can then choose to solve the puzzle one number at a time or all at once
 # [ ]    -if solving all at once there will be an animation of the back-tracking alogorithm used
@@ -35,30 +34,15 @@ pygame.init()
 
 class Grid:
 
-    # default board
-    # board = [
-    #     [7, 8, 0, 4, 0, 0, 1, 2, 0],
-    #     [6, 0, 0, 0, 7, 5, 0, 0, 9],
-    #     [0, 0, 0, 6, 0, 1, 0, 7, 8],
-    #     [0, 0, 7, 0, 4, 0, 2, 6, 0],
-    #     [0, 0, 1, 0, 5, 0, 9, 3, 0],
-    #     [9, 0, 4, 0, 6, 0, 0, 0, 5],
-    #     [0, 7, 0, 3, 0, 0, 0, 1, 2],
-    #     [1, 2, 0, 0, 0, 7, 4, 0, 0],
-    #     [0, 4, 9, 2, 0, 6, 0, 0, 7]
-    # ]
-
-    # next step: write method to randomly generate solvable states
-    # allow user to enter a board manually to solve, or select from ease, medium, hard
-
     def __init__(self, rows, cols, width, height, difficulty):
 
         self.rows = rows
         self.cols = cols
-        # conver to function that sets the board based on the game mode
+
         self.game_play = Sudoku(difficulty)
         self.board = self.game_play.board
-        self.model = None
+
+        #self.model = None
 
         # initialize squares
         self.squares = [[Square(self.board[i][j], i, j, width, height)
@@ -70,7 +54,7 @@ class Grid:
         self.selected = None
 
     def update_model(self):
-        self.model = [[self.squares[i][j].value for j in range(
+        self.board = [[self.squares[i][j].value for j in range(
             self.cols)] for i in range(self.rows)]
 
     # Eventually: instead of checking if the current move is in the solved solution,
@@ -88,7 +72,7 @@ class Grid:
             self.update_model()
             # if self.game_play.check_valid(self.model, val, (row, col)) and self.game_play.solve_board(self.model):
             #     return True
-            self.game_play.update(self.model)
+            self.game_play.update(self.board)
             if self.game_play.check_valid(val, (row, col)) and self.game_play.solve_board():
                 return True
 
@@ -96,7 +80,7 @@ class Grid:
                 self.squares[row][col].set(0)
                 self.squares[row][col].set_temp(0)
                 self.update_model()
-                self.game_play.update(self.model)
+                self.game_play.update(self.board)
                 return False
 
     def temp_guess(self, val):
@@ -162,6 +146,10 @@ class Grid:
         for i in range(self.rows):
             for j in range(self.cols):
                 self.squares[i][j].draw(win)
+
+    def backtracking_solve(self):
+
+        pass
 
 
 class Square:
@@ -326,10 +314,11 @@ class Game():
                         else:
                             print('Not correct')
                         self.key = None
-
+                        # need to display again menu
                         if self.board.is_finished():
                             self.curr_menu = self.again_menu
                             self.running = False
+                            #self.curr_menu.run_display = True
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
