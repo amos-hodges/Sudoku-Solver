@@ -281,14 +281,15 @@ class AgainMenu(Menu):
             self.curr_btn = 'n'
             if self.click:
                 self.click_active = True
-                # pygame.quit()
-
+                self.game.playing = False
+                self.run_display = False
         if self.yes_btn.collidepoint((mx, my)):
             self.curr_btn = 'y'
             if self.click:
                 self.curr_btn = 'y'
                 self.click_active = True
-                self.game.playing = True
                 self.run_display = False
+
+                self.game.playing = True
 
         self.click = False

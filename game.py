@@ -148,18 +148,20 @@ class Grid:
         for i in range(self.rows):
             for j in range(self.cols):
                 self.squares[i][j].draw(win)
+    # gets the row,col & value from the backtracking move list at the current index
 
     def backtracking_solve(self):
+
         if self.solve_idx < len(self.game_play.current_move):
+
             (row, col), val = self.game_play.current_move[self.solve_idx]
 
             self.squares[row][col].set(val)
-            self.update_model()
+            # self.update_model()
             # self.game_play.update(self.board)
 
-            time.sleep(.05)
-
-            print(f'placing {val} at ({row},{col})')
+            time.sleep(.01)
+            self.solve_idx += 1
 
 
 class Square:
@@ -254,7 +256,13 @@ class Game():
             if self.solve_clicked:
 
                 self.board.backtracking_solve()
-                self.board.solve_idx += 1
+            if self.board.is_finished():
+                print('Board finished')
+                self.board.game_play.reset_board()
+                self.curr_menu = self.again_menu
+                #self.running = False
+                self.curr_menu.run_display = True
+                self.playing = False
             ################################
             self.draw_window()
             pygame.display.update()
@@ -328,16 +336,15 @@ class Game():
                         # Hint button to show next move in solve_board
                         # undo button to take away last move?
                         if self.board.place(self.board.squares[i][j].temp):
+                            self.board.update_model()
+                            self.board.game_play.update(self.board.board)
+
                             print('Correct move')
 
                         else:
                             print('Not correct')
                         self.key = None
                         # need to display again menu
-                        if self.board.is_finished():
-                            self.curr_menu = self.again_menu
-                            self.running = False
-                            #self.curr_menu.run_display = True
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
@@ -348,13 +355,18 @@ class Game():
                         self.board.select(clicked[0], clicked[1])
                         self.key = None
                 # clicking spaces between bottons and board will do nothing
-                else:
-                    print('clicking a button')
+                elif self.solve_btn.collidepoint(pos):
+                    print('solve button')
                     self.board.solve_idx = 0
                     self.board.game_play.get_solve_order()
-
                     self.solve_clicked = True
                     self.key = None
+                elif self.mid_butn.collidepoint(pos):
+                    print('middle button')
+                    # add a valid move to the board
+                elif self.undo_btn.collidepoint(pos):
+                    print('undo button')
+                    # remove the last added number
 
         if self.board.selected and self.key != None:
             self.board.temp_guess(self.key)

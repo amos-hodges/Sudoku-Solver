@@ -26,6 +26,7 @@ class Sudoku:
     def __init__(self, difficulty):
         self.difficulty = difficulty
         self.empty_squares = 0
+        # list that is populated by every move attempted during backtracking
         self.current_move = []
         self.reset_board()
         self.populate_board()
@@ -88,16 +89,15 @@ class Sudoku:
                     return True
                 # resets the empty spot so it can be tried again
                 self.board[row][col] = 0
-
-            # else:
-            #     print(f'({row},{col}) {i}')
         return False
+    # same as solve board function, but only run to populate the solve order list.
 
     def get_solve_order(self):
 
         find = self.find_empty()
         # board is full if no empty spots are found
         if not find:
+
             return True
         else:
             row, col = find
@@ -241,6 +241,7 @@ class Sudoku:
 
             copy_sol = tuple(tuple(sub) for sub in copy_sol)
             solutions.append(copy_sol)
+
         return set(solutions)
 
     def tuple_to_list(self, li):
