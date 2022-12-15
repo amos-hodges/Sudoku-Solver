@@ -16,7 +16,6 @@ from sudoku import *
 from menu import *
 import time
 
-# pygame.init()
 
 # End goal:
 
@@ -43,8 +42,6 @@ class Grid:
         self.game_play = Sudoku(difficulty)
         self.board = self.game_play.board
 
-        #self.model = None
-
         # initialize squares
         self.squares = [[Square(self.board[i][j], i, j, width, height)
                          for j in range(cols)] for i in range(rows)]
@@ -54,6 +51,8 @@ class Grid:
         # to store the coordinates of the currently selected square
         self.selected = None
         self.solve_idx = 0
+        self.hint_idx = 0
+    # keep grid class board in sync with the display board
 
     def update_model(self):
         self.board = [[self.squares[i][j].value for j in range(
@@ -77,8 +76,6 @@ class Grid:
             self.squares[row][col].set(val)
 
             self.update_model()
-            # if self.game_play.check_valid(self.model, val, (row, col)) and self.game_play.solve_board(self.model):
-            #     return True
             self.game_play.update(self.board)
             if self.game_play.check_valid(val, (row, col)) and self.game_play.solve_board():
                 return True
@@ -102,8 +99,7 @@ class Grid:
 
         self.squares[row][col].selected = True
         self.selected = (row, col)
-
-    # used for delete key to remove an entry
+    # deleting temp guess using del key
 
     def clear(self):
 
@@ -163,11 +159,25 @@ class Grid:
             (row, col), val = self.game_play.current_move[self.solve_idx]
 
             self.squares[row][col].set(val)
-            # self.update_model()
-            # self.game_play.update(self.board)
 
             time.sleep(.01)
             self.solve_idx += 1
+
+    ######################################################
+    # inserts values from backtracking in reverse
+    # would like to make hint selection random
+    # need to make sure there are no errors when aspot on the solution moves list is already occupied
+    def insert_hint(self):
+
+        (row, col), val = self.game_play.solution_moves[self.hint_idx]
+        if self.squares[row][col].value == 0:
+            self.squares[row][col].set(val)
+            self.hint_idx += 1
+            return False
+        else:
+            self.game_play.solution_moves.pop(self.hint_idx)
+            self.hint_idx += 1
+            return True
 
 
 class Square:
@@ -367,7 +377,11 @@ class Game():
                     self.solve_clicked = True
                     self.key = None
                 elif self.mid_butn.collidepoint(pos):
-                    print('middle button')
+                    print(self.board.hint_idx, len(
+                        self.board.game_play.solution_moves))
+                    self.board.game_play.get_solve_order()
+                    while self.board.insert_hint():
+                        print('hint inserted')
                     # add a valid move to the board
                 elif self.undo_btn.collidepoint(pos):
                     print('undo button')

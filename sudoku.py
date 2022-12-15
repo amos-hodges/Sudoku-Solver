@@ -28,6 +28,8 @@ class Sudoku:
         self.empty_squares = 0
         # list that is populated by every move attempted during backtracking
         self.current_move = []
+        # ordered list of correct moves according to backtracking solve
+        self.solution_moves = []
         self.reset_board()
         self.populate_board()
         self.copy_board = []
@@ -110,7 +112,7 @@ class Sudoku:
                 # recursively checks the current board by calling solve_board until check valid returns false
                 # then steps back the the previous iteration
                 if self.get_solve_order():
-
+                    self.solution_moves.append(((row, col), i))
                     return True
                 # resets the empty spot so it can be tried again
                 self.board[row][col] = 0
@@ -300,7 +302,7 @@ class Sudoku:
 
     def reset_board(self):
         self.board = [[0 for j in range(9)] for i in range(9)]
-    # to update sudoku board attribute based on new entries to grid
+    # keep sudoku class board in sync with grid/game board
 
     def update(self, board_rep):
         self.board = board_rep
@@ -312,9 +314,11 @@ class Sudoku:
 # def main():
 
 #     b = Sudoku('Easy')
-
-#     # b.get_solve_order()
-#     print(b.current_move)
+#     b.print_board()
+#     print('\n')
+#     b.get_solve_order()
+#     b.print_board()
+#     print(b.solution_moves)
 
 
 # main()
