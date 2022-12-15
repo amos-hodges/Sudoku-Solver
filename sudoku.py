@@ -83,14 +83,14 @@ class Sudoku:
                 # recursively checks the current board by calling solve_board until check valid returns false
                 # then steps back the the previous iteration
                 #print(f'Current: ({row},{col}) {i}')
-                self.current_move.append(((row, col), i))
+
                 if self.solve_board():
                     return True
                 # resets the empty spot so it can be tried again
                 self.board[row][col] = 0
-                self.current_move.append(((row, col), 0))
-            else:
-                print(f'({row},{col}) {i}')
+
+            # else:
+            #     print(f'({row},{col}) {i}')
         return False
 
     def get_solve_order(self):
@@ -106,14 +106,15 @@ class Sudoku:
             if self.check_valid(i, (row, col)):
 
                 self.board[row][col] = i
-
+                self.current_move.append(((row, col), i))
                 # recursively checks the current board by calling solve_board until check valid returns false
                 # then steps back the the previous iteration
-                if self.solve_board():
+                if self.get_solve_order():
 
                     return True
                 # resets the empty spot so it can be tried again
                 self.board[row][col] = 0
+                self.current_move.append(((row, col), 0))
         return False
 
     def check_valid(self, num, pos):

@@ -157,7 +157,7 @@ class Grid:
             self.update_model()
             # self.game_play.update(self.board)
 
-            # time.sleep(.05)
+            time.sleep(.05)
 
             print(f'placing {val} at ({row},{col})')
 
@@ -316,6 +316,7 @@ class Game():
                     self.board.clear()
                     self.key = None
                 if event.key == pygame.K_ESCAPE:
+
                     self.curr_menu = self.main_menu
                     self.playing = False
                 if event.key == pygame.K_RETURN:
@@ -349,7 +350,9 @@ class Game():
                 # clicking spaces between bottons and board will do nothing
                 else:
                     print('clicking a button')
-                    self.board.game_play.print_board()
+                    self.board.solve_idx = 0
+                    self.board.game_play.get_solve_order()
+
                     self.solve_clicked = True
                     self.key = None
 
