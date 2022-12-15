@@ -53,6 +53,7 @@ class Grid:
         self.height = height
         # to store the coordinates of the currently selected square
         self.selected = None
+        self.solve_idx = 0
 
     def update_model(self):
         self.board = [[self.squares[i][j].value for j in range(
@@ -149,17 +150,16 @@ class Grid:
                 self.squares[i][j].draw(win)
 
     def backtracking_solve(self):
+        if self.solve_idx < len(self.game_play.current_move):
+            (row, col), val = self.game_play.current_move[self.solve_idx]
 
-        row, col = self.game_play.find_empty()
-
-        for i in range(1, 10):
-            self.squares[row][col].set(i)
+            self.squares[row][col].set(val)
             self.update_model()
-            self.game_play.update(self.board)
+            # self.game_play.update(self.board)
 
-            time.sleep(.1)
+            # time.sleep(.05)
 
-            print(f'placing {i} at ({row},{col})')
+            print(f'placing {val} at ({row},{col})')
 
 
 class Square:
@@ -250,8 +250,12 @@ class Game():
     def game_loop(self):
         while self.playing:
             self.check_events()
+            ###Testing backtracking solv###
             if self.solve_clicked:
+
                 self.board.backtracking_solve()
+                self.board.solve_idx += 1
+            ################################
             self.draw_window()
             pygame.display.update()
 
@@ -345,6 +349,7 @@ class Game():
                 # clicking spaces between bottons and board will do nothing
                 else:
                     print('clicking a button')
+                    self.board.game_play.print_board()
                     self.solve_clicked = True
                     self.key = None
 
