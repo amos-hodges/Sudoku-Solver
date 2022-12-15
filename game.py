@@ -59,6 +59,11 @@ class Grid:
         self.board = [[self.squares[i][j].value for j in range(
             self.cols)] for i in range(self.rows)]
 
+    def reset_squares(self):
+        for i in range(self.rows):
+            for j in range(self.cols):
+                self.squares[i][j].value = 0
+
     # Eventually: instead of checking if the current move is in the solved solution,
     # keep track of user moves with a slightly different color and allow them to go back and change the value
     # write a "hint" functionality using the solve_board function
@@ -126,6 +131,7 @@ class Grid:
             for j in range(self.cols):
                 if self.squares[i][j].value == 0:
                     return False
+
         return True
 
     def draw(self, win):
@@ -252,20 +258,20 @@ class Game():
     def game_loop(self):
         while self.playing:
             self.check_events()
-            ###Testing backtracking solv###
-            if self.solve_clicked:
 
+            if self.solve_clicked:
                 self.board.backtracking_solve()
-            if self.board.is_finished():
-                print('Board finished')
-                self.board.game_play.reset_board()
-                self.curr_menu = self.again_menu
-                #self.running = False
-                self.curr_menu.run_display = True
-                self.playing = False
-            ################################
+
             self.draw_window()
             pygame.display.update()
+            # check after last number is updated
+            if self.board.is_finished():
+                time.sleep(2)
+                self.solve_clicked = False
+                self.board.reset_squares()
+                self.curr_menu = self.again_menu
+                self.curr_menu.run_display = True
+                self.playing = False
 
     def draw_text(self, text, font, color, surface, x, y):
         textobj = font.render(text, 1, color)
@@ -356,7 +362,6 @@ class Game():
                         self.key = None
                 # clicking spaces between bottons and board will do nothing
                 elif self.solve_btn.collidepoint(pos):
-                    print('solve button')
                     self.board.solve_idx = 0
                     self.board.game_play.get_solve_order()
                     self.solve_clicked = True

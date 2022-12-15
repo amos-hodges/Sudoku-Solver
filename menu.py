@@ -43,8 +43,9 @@ class Menu():
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-
-                    pygame.quit()
+                    self.game.curr_menu = self.game.main_menu
+                    self.run_display = False
+                    # pygame.quit()
                 if self.click_active:
                     if event.key == pygame.K_BACKSPACE:
                         self.game.username = self.game.username[:-1]
@@ -281,15 +282,16 @@ class AgainMenu(Menu):
             self.curr_btn = 'n'
             if self.click:
                 self.click_active = True
-                self.game.playing = False
+                self.game.running = False
                 self.run_display = False
         if self.yes_btn.collidepoint((mx, my)):
             self.curr_btn = 'y'
             if self.click:
                 self.curr_btn = 'y'
                 self.click_active = True
+                self.game.curr_menu = self.game.main_menu
                 self.run_display = False
 
-                self.game.playing = True
+                #self.game.playing = False
 
         self.click = False
