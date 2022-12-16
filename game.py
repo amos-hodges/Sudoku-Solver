@@ -20,7 +20,7 @@
 # -hard board takes too long to generate
 # -font may not be available on all machines
 # -hint button can be pressed while solve is running, causes incorrect solutions in solve mode
-# -sol: require a minimum number of entries for solve mode to work, create a toggle so once solve is click hint does not work
+# -sol: create a toggle so once solve is click hint does not work
 
 import pygame
 from sudoku import *
@@ -56,7 +56,7 @@ class Grid:
         # initialize squares
         self.squares = [[Square(self.board[i][j], i, j, width, height)
                          for j in range(cols)] for i in range(rows)]
-
+        self.collision = None
         self.width = width
         self.height = height
         # to store the coordinates of the currently selected square
@@ -254,6 +254,7 @@ class Game():
         self.difficulty = 'Easy'
         self.black, self.white, self.grey, self.dark_grey = (
             0, 0, 0), (255, 255, 255), (128, 128, 128), (80, 80, 80)
+        self.blue = (36, 142, 191)
         self.title_font = pygame.font.SysFont('Corbel', 80)
         self.reg_font = pygame.font.SysFont('Corbel', 20)
         self.small_font = pygame.font.SysFont('Corbel', 30)
@@ -363,6 +364,12 @@ class Game():
                 if event.key == pygame.K_RETURN:
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
+
+                        ###############################
+                        # returns collision type and location of number
+                        self.board.collision = self.board.game_play.get_collision(
+                            self.key, self.board.selected)
+                        print(self.board.collision)
                         # TO DO:
                         # Impliment an error system for invalid moves (show which row column or square causes the error)
                         if self.board.place(self.board.squares[i][j].temp):
@@ -385,10 +392,15 @@ class Game():
                         self.key = None
                 # click on buttons
                 elif self.solve_btn.collidepoint(pos):
-                    self.board.solve_idx = 0
-                    self.board.game_play.get_solve_order()
-                    self.solve_clicked = True
-                    self.key = None
+                    # prevent solving unless the minimum number is met
+                    if (self.difficulty == 'Solving') and (self.board.move_num < 17):
+                        pass
+                    else:
+                        self.board.solve_idx = 0
+                        self.board.game_play.get_solve_order()
+                        self.solve_clicked = True
+                        self.key = None
+
                 elif self.mid_butn.collidepoint(pos):
                     # get the solution moves list and create a list to index through it (randomly)
                     # Note: is it possible to call these once instead of every click?

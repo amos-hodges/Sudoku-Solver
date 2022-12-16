@@ -8,6 +8,7 @@
 
 ### TO DO: ###
 # -finish menu stats page
+# -highlight difficulty selected
 # -make sure user name and difficulty are required to start a game
 # -consolidate redundant methods to the parent class
 # -once game classes are complete make sure selection
@@ -33,6 +34,7 @@ class Menu():
         self.curr_color = self.passive_color
 
         self.click_active = False
+        self.choice_active = False
 
     # need escape key to only quit game from main menu
 
@@ -47,12 +49,17 @@ class Menu():
                     self.game.curr_menu = self.game.main_menu
                     self.run_display = False
                     # pygame.quit()
+
                 if self.click_active:
+
                     if event.key == pygame.K_BACKSPACE:
                         self.game.username = self.game.username[:-1]
                     else:
                         if len(self.game.username) <= 15:
-                            self.game.username += event.unicode
+                            if (event.key == pygame.K_RETURN):
+                                self.click_active = False
+                            else:
+                                self.game.username += event.unicode
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # left click
@@ -62,8 +69,10 @@ class Menu():
     def get_color(self):
         if self.click_active:
             self.curr_color = self.active_color
+
         else:
             self.curr_color = self.passive_color
+
 
 # Main Menu / Title Page
 
@@ -133,6 +142,10 @@ class DiffMenu(Menu):
     def __init__(self, game):
         Menu.__init__(self, game)
 
+        self.color1 = self.passive_color
+        self.color2 = self.passive_color
+        self.color3 = self.passive_color
+
     def create_menu(self):
 
         self.game.window.fill(self.game.grey)
@@ -155,16 +168,17 @@ class DiffMenu(Menu):
             self.center_w, 450, self.button_width, self.button_height)
 
         self.get_color()
+        self.set_option_color()
 
         pygame.draw.rect(self.game.window, self.curr_color, self.usr_input)
-        pygame.draw.rect(self.game.window, self.game.dark_grey, self.easy_btn)
-        pygame.draw.rect(self.game.window, self.game.dark_grey, self.med_btn)
-        pygame.draw.rect(self.game.window, self.game.dark_grey, self.hard_btn)
+        pygame.draw.rect(self.game.window, self.color1, self.easy_btn)
+        pygame.draw.rect(self.game.window, self.color2, self.med_btn)
+        pygame.draw.rect(self.game.window, self.color3, self.hard_btn)
         pygame.draw.rect(self.game.window, self.game.dark_grey, self.play_btn)
 
         # username input
 
-        self.game.draw_text(self.game.username, self.game.misc_font, self.game.black,
+        self.game.draw_text(self.game.username, self.game.misc_font, self.game.blue,
                             self.game.window, self.middle_w, 150+(self.button_height/2)-10)
         # difficulty
         self.game.draw_text('Easy', self.game.reg_font, self.game.white,
@@ -176,6 +190,25 @@ class DiffMenu(Menu):
         # play button
         self.game.draw_text('Play', self.game.small_font, self.game.white,
                             self.game.window, self.middle_w, 450+(self.button_height/2)-15)
+
+    def set_option_color(self):
+        if self.choice_active:
+            if self.game.difficulty == 'Easy':
+                self.color1 = self.active_color
+                self.color2 = self.game.dark_grey
+                self.color3 = self.game.dark_grey
+            if self.game.difficulty == 'Medium':
+                self.color1 = self.game.dark_grey
+                self.color2 = self.active_color
+                self.color3 = self.game.dark_grey
+            if self.game.difficulty == 'Hard':
+                self.color1 = self.game.dark_grey
+                self.color2 = self.game.dark_grey
+                self.color3 = self.active_color
+        else:
+            self.color1 = self.game.dark_grey
+            self.color2 = self.game.dark_grey
+            self.color3 = self.game.dark_grey
 
     def display_menu(self):
         self.run_display = True
@@ -190,6 +223,7 @@ class DiffMenu(Menu):
         mx, my = pygame.mouse.get_pos()
         if self.play_btn.collidepoint((mx, my)):
             if self.click:
+
                 print('Working: play game')
                 self.game.get_diff()
                 self.game.playing = True
@@ -199,14 +233,17 @@ class DiffMenu(Menu):
         if self.easy_btn.collidepoint((mx, my)):
             if self.click:
                 self.game.difficulty = 'Easy'
+                self.choice_active = True
                 print('Selected easy')
         if self.med_btn.collidepoint((mx, my)):
             if self.click:
                 self.game.difficulty = 'Medium'
+                self.choice_active = True
                 print('Selected medium')
         if self.hard_btn.collidepoint((mx, my)):
             if self.click:
                 self.game.difficulty = 'Hard'
+                self.choice_active = True
                 print('Selected Hard')
 
         if self.click:
