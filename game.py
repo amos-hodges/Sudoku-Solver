@@ -7,9 +7,20 @@
 # GUI created using validate and solve functions
 
 ### TO DO: ###
-#
+# -time games, record number of hints and wether or not solve was used, number of games at each difficulty
+# -populate a list with the stats for each game played under a specific username
+# -create a function for conflict checking that highlights the row,col or box where the error occurs
+# -diagnose/fix bugs
 # -check for unused variables, consolidate and simplify
-# -impliment undo, help/step , and solve buttons (will need to work in tandem with sudoku class)
+
+
+### CURRENT BUGS/ISSUES ###
+# -game does not require username to start
+# -difficulty buttons to not highlight to indicate which is selected
+# -hard board takes too long to generate
+# -font may not be available on all machines
+# -hint button can be pressed while solve is running, causes incorrect solutions in solve mode
+# -sol: require a minimum number of entries for solve mode to work, create a toggle so once solve is click hint does not work
 
 import pygame
 from sudoku import *
@@ -20,7 +31,6 @@ import random
 
 # End goal:
 
-#   A menu interface that:
 # [X]   1. allows the user to choose between playing sudoku and entering a puzzle to solve
 # [ ]   2. allows the player to enter their username to keep track of scores/stats
 # [X]   3. if playing sudoku, the user can choose from easy, medium or hard and it will randomly generate
@@ -28,9 +38,9 @@ import random
 # [ ]    -when the user is done the program will display the stats and highlight the best game
 # [X]   4. if solving sudoku the user can enter numbers on a blank board
 # [ ]    -the display will indicate which row, column or box if an entry has a conflict
-# [ ]    -the user can then choose to solve the puzzle one number at a time or all at once
-# [ ]    -if solving all at once there will be an animation of the back-tracking alogorithm used
-# [ ]   5. a 'play again/solve more' page upon completing a puzzle in either mode
+# [X]    -the user can then choose to solve the puzzle one number at a time or all at once
+# [X]    -if solving all at once there will be an animation of the back-tracking alogorithm used
+# [X]   5. a 'play again/solve more' page upon completing a puzzle in either mode
 
 
 class Grid:
@@ -284,7 +294,7 @@ class Game():
             pygame.display.update()
             # check after last number is updated
             if self.board.is_finished():
-                time.sleep(2)
+                time.sleep(5)
                 self.solve_clicked = False
                 self.board.reset_squares()
                 self.curr_menu = self.again_menu
@@ -348,7 +358,6 @@ class Game():
                     self.board.clear()
                     self.key = None
                 if event.key == pygame.K_ESCAPE:
-
                     self.curr_menu = self.main_menu
                     self.playing = False
                 if event.key == pygame.K_RETURN:
@@ -356,22 +365,17 @@ class Game():
                     if self.board.squares[i][j].temp != 0:
                         # TO DO:
                         # Impliment an error system for invalid moves (show which row column or square causes the error)
-                        # Player entered moves show up in a slightly different color and can be changed
-                        # Hint button to show next move in solve_board
-                        # undo button to take away last move?
                         if self.board.place(self.board.squares[i][j].temp):
                             self.board.update_model()
                             self.board.game_play.update(self.board.board)
-
-                            print('Correct move')
-
-                        else:
-                            print('Not correct')
+                        # else:
+                        ###############################
+                        # function to highlight where #
+                        # the invalid move collides   #
+                        ###############################
                         self.key = None
-                        # need to display again menu
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-
                 pos = pygame.mouse.get_pos()
                 # click on game board
                 if pos[1] < self.display_width:
@@ -379,25 +383,22 @@ class Game():
                     if clicked:
                         self.board.select(clicked[0], clicked[1])
                         self.key = None
-                # clicking spaces between bottons and board will do nothing
+                # click on buttons
                 elif self.solve_btn.collidepoint(pos):
                     self.board.solve_idx = 0
                     self.board.game_play.get_solve_order()
                     self.solve_clicked = True
                     self.key = None
                 elif self.mid_butn.collidepoint(pos):
+                    # get the solution moves list and create a list to index through it (randomly)
+                    # Note: is it possible to call these once instead of every click?
                     self.board.game_play.get_solve_order()
                     self.board.hint_num = [
                         *range(len(self.board.game_play.solution_moves))]
                     while self.board.insert_hint():
                         pass
-                       #print('hint inserted')
-                    # add a valid move to the board
                 elif self.undo_btn.collidepoint(pos):
-                    print('undo button')
-                    print(self.board.move_list, self.board.move_num)
                     self.board.undo_move()
-                    # remove the last added number
 
         if self.board.selected and self.key != None:
             self.board.temp_guess(self.key)

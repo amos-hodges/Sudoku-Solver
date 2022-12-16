@@ -11,10 +11,8 @@
 # -methods to solve puzzles and check validity of moves
 
 ### TO DO: ###
-# -make sure the board in Sudoku() object is in sync with the current Game() object
-# -finish functions necessary to generate random boards depending on difficulty
 # -create helper functions for error indicatation
-# -create function for backtracking animation
+
 
 import random
 import copy

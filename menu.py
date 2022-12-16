@@ -8,6 +8,7 @@
 
 ### TO DO: ###
 # -finish menu stats page
+# -make sure user name and difficulty are required to start a game
 # -consolidate redundant methods to the parent class
 # -once game classes are complete make sure selection
 #  & escape sequences are correct
