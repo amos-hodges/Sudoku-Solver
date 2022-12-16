@@ -15,6 +15,7 @@ import pygame
 from sudoku import *
 from menu import *
 import time
+import random
 
 
 # End goal:
@@ -51,7 +52,11 @@ class Grid:
         # to store the coordinates of the currently selected square
         self.selected = None
         self.solve_idx = 0
+        self.hint_num = []
         self.hint_idx = 0
+        self.move_list = []
+        self.move_num = 0
+
     # keep grid class board in sync with the display board
 
     def update_model(self):
@@ -78,6 +83,8 @@ class Grid:
             self.update_model()
             self.game_play.update(self.board)
             if self.game_play.check_valid(val, (row, col)) and self.game_play.solve_board():
+                self.move_list.append((row, col))
+                self.move_num += 1
                 return True
 
             else:
@@ -159,25 +166,26 @@ class Grid:
             (row, col), val = self.game_play.current_move[self.solve_idx]
 
             self.squares[row][col].set(val)
-
-            time.sleep(.01)
+            time.sleep(.05)
             self.solve_idx += 1
 
-    ######################################################
-    # inserts values from backtracking in reverse
-    # would like to make hint selection random
-    # need to make sure there are no errors when aspot on the solution moves list is already occupied
     def insert_hint(self):
-
+        self.hint_idx = random.choice(self.hint_num)
         (row, col), val = self.game_play.solution_moves[self.hint_idx]
         if self.squares[row][col].value == 0:
             self.squares[row][col].set(val)
-            self.hint_idx += 1
+            self.move_list.append((row, col))
+            self.move_num += 1
             return False
         else:
-            self.game_play.solution_moves.pop(self.hint_idx)
-            self.hint_idx += 1
             return True
+
+    def undo_move(self):
+        if self.move_num > 0:
+            row, col = self.move_list[self.move_num-1]
+            self.squares[row][col].value = 0
+            self.move_list.pop(self.move_num-1)
+            self.move_num -= 1
 
 
 class Square:
@@ -363,6 +371,7 @@ class Game():
                         # need to display again menu
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+
                 pos = pygame.mouse.get_pos()
                 # click on game board
                 if pos[1] < self.display_width:
@@ -377,14 +386,17 @@ class Game():
                     self.solve_clicked = True
                     self.key = None
                 elif self.mid_butn.collidepoint(pos):
-                    print(self.board.hint_idx, len(
-                        self.board.game_play.solution_moves))
                     self.board.game_play.get_solve_order()
+                    self.board.hint_num = [
+                        *range(len(self.board.game_play.solution_moves))]
                     while self.board.insert_hint():
-                        print('hint inserted')
+                        pass
+                       #print('hint inserted')
                     # add a valid move to the board
                 elif self.undo_btn.collidepoint(pos):
                     print('undo button')
+                    print(self.board.move_list, self.board.move_num)
+                    self.board.undo_move()
                     # remove the last added number
 
         if self.board.selected and self.key != None:
