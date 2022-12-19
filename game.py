@@ -15,8 +15,8 @@
 
 
 ### CURRENT BUGS/ISSUES ###
-# -game does not require username to start
-# -eroor checking creates collisions with invisible numbers in solve mode
+# -there are cases where there are no direct collisions but the entry is not in the solution, crashes game in both modes
+# -error checking creates collisions with invisible numbers in solve mode
 # -hard board takes too long to generate
 # -font may not be available on all machines
 # -hint button can be pressed while solve is running, causes incorrect solutions in solve mode
@@ -37,7 +37,7 @@ import random
 # [ ]    -until the window is closed, the program will keep track of how many puzzles are solves, the difficulty and the time for each
 # [ ]    -when the user is done the program will display the stats and highlight the best game
 # [X]   4. if solving sudoku the user can enter numbers on a blank board
-# [ ]    -the display will indicate which row, column or box if an entry has a conflict
+# [X]    -the display will indicate which row, column or box if an entry has a conflict
 # [X]    -the user can then choose to solve the puzzle one number at a time or all at once
 # [X]    -if solving all at once there will be an animation of the back-tracking alogorithm used
 # [X]   5. a 'play again/solve more' page upon completing a puzzle in either mode
@@ -389,30 +389,23 @@ class Game():
                     self.playing = False
                 if event.key == pygame.K_RETURN:
                     self.clash = False
+                    self.board.collision = ['none', (0, 0)]
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
 
-                        ###############################
-                        # returns collision type and location of number
-                        self.board.collision = self.board.game_play.get_collision(
-                            self.key, self.board.selected)
+                        if self.board.squares[i][j].value == 0:
+                            self.board.collision = self.board.game_play.get_collision(
+                                self.key, self.board.selected)
 
                         if self.board.collision:
                             self.clash = True
-                            print(self.board.collision)
 
-                        # TO DO:
-                        # Impliment an error system for invalid moves (show which row column or square causes the error)
                         if self.board.place(self.board.squares[i][j].temp):
                             self.clash = False
                             self.board.collision = ['none', (0, 0)]
                             self.board.update_model()
                             self.board.game_play.update(self.board.board)
-                        # else:
-                        ###############################
-                        # function to highlight where #
-                        # the invalid move collides   #
-                        ###############################
+
                         self.key = None
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -436,7 +429,6 @@ class Game():
                         self.key = None
 
                 elif self.mid_butn.collidepoint(pos):
-                    # get the solution moves list and create a list to index through it (randomly)
                     # Note: is it possible to call these once instead of every click?
                     self.board.game_play.get_solve_order()
                     self.board.hint_num = [
@@ -452,7 +444,6 @@ class Game():
     def draw_window(self):
         self.window.fill(self.white)
         self.board.draw(self.window)
-
         self.create_buttons()
 
     # method to reinitialize board based on difficulty

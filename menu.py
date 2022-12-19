@@ -223,11 +223,13 @@ class DiffMenu(Menu):
         mx, my = pygame.mouse.get_pos()
         if self.play_btn.collidepoint((mx, my)):
             if self.click:
+                if self.game.username != '':
 
-                print('Working: play game')
-                self.game.get_diff()
-                self.game.playing = True
-                self.run_display = False
+                    print('Working: play game')
+                    self.game.get_diff()
+                    self.game.playing = True
+                    self.run_display = False
+                self.game.username = 'player'
 
         # NEED: click event for setting difficulty
         if self.easy_btn.collidepoint((mx, my)):
