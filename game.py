@@ -9,14 +9,14 @@
 ### TO DO: ###
 # -time games, record number of hints and wether or not solve was used, number of games at each difficulty
 # -populate a list with the stats for each game played under a specific username
-# -create a function for conflict checking that highlights the row,col or box where the error occurs
+# -add ability for arrow keys to be used in selecting a box
 # -diagnose/fix bugs
 # -check for unused variables, consolidate and simplify
 
 
 ### CURRENT BUGS/ISSUES ###
 # -game does not require username to start
-# -difficulty buttons to not highlight to indicate which is selected
+# -eroor checking creates collisions with invisible numbers in solve mode
 # -hard board takes too long to generate
 # -font may not be available on all machines
 # -hint button can be pressed while solve is running, causes incorrect solutions in solve mode
@@ -56,6 +56,7 @@ class Grid:
         # initialize squares
         self.squares = [[Square(self.board[i][j], i, j, width, height)
                          for j in range(cols)] for i in range(rows)]
+        # variable to hold collision info, might not need
         self.collision = None
         self.width = width
         self.height = height
@@ -167,6 +168,26 @@ class Grid:
         for i in range(self.rows):
             for j in range(self.cols):
                 self.squares[i][j].draw(win)
+
+    def draw_collision(self, win):
+        gap = self.width / 9
+
+        if self.collision[0] == 'row':
+            pygame.draw.rect(
+                win, (255, 0, 0), (0, self.collision[1][0]*gap, gap*9, gap), 1)
+            pygame.draw.rect(
+                win, (255, 0, 0), (self.collision[1][1]*gap, self.collision[1][0]*gap, gap, gap), 4)
+        if self.collision[0] == 'column':
+            pygame.draw.rect(
+                win, (255, 0, 0), (self.collision[1][1]*gap, 0, gap, gap*9), 1)
+            pygame.draw.rect(
+                win, (255, 0, 0), (self.collision[1][1]*gap, self.collision[1][0]*gap, gap, gap), 4)
+        if self.collision[0] == 'box':
+            pygame.draw.rect(
+                win, (255, 0, 0), ((self.collision[1][1]//3)*gap*3, (self.collision[1][0]//3)*gap*3, gap*3, gap*3), 1)
+            pygame.draw.rect(
+                win, (255, 0, 0), (self.collision[1][1]*gap, self.collision[1][0]*gap, gap, gap), 4)
+
     # gets the row,col & value from the backtracking move list at the current index
 
     def backtracking_solve(self):
@@ -176,7 +197,7 @@ class Grid:
             (row, col), val = self.game_play.current_move[self.solve_idx]
 
             self.squares[row][col].set(val)
-            time.sleep(.05)
+            time.sleep(.025)
             self.solve_idx += 1
 
     def insert_hint(self):
@@ -283,6 +304,7 @@ class Game():
         self.key = None
 
         self.solve_clicked = False
+        self.clash = False
 
     def game_loop(self):
         while self.playing:
@@ -292,6 +314,10 @@ class Game():
                 self.board.backtracking_solve()
 
             self.draw_window()
+
+            if self.clash:
+                self.board.draw_collision(self.window)
+
             pygame.display.update()
             # check after last number is updated
             if self.board.is_finished():
@@ -362,6 +388,7 @@ class Game():
                     self.curr_menu = self.main_menu
                     self.playing = False
                 if event.key == pygame.K_RETURN:
+                    self.clash = False
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
 
@@ -369,10 +396,16 @@ class Game():
                         # returns collision type and location of number
                         self.board.collision = self.board.game_play.get_collision(
                             self.key, self.board.selected)
-                        print(self.board.collision)
+
+                        if self.board.collision:
+                            self.clash = True
+                            print(self.board.collision)
+
                         # TO DO:
                         # Impliment an error system for invalid moves (show which row column or square causes the error)
                         if self.board.place(self.board.squares[i][j].temp):
+                            self.clash = False
+                            self.board.collision = ['none', (0, 0)]
                             self.board.update_model()
                             self.board.game_play.update(self.board.board)
                         # else:
@@ -387,6 +420,7 @@ class Game():
                 # click on game board
                 if pos[1] < self.display_width:
                     clicked = self.board.click(pos)
+                    self.clash = False
                     if clicked:
                         self.board.select(clicked[0], clicked[1])
                         self.key = None
@@ -418,6 +452,7 @@ class Game():
     def draw_window(self):
         self.window.fill(self.white)
         self.board.draw(self.window)
+
         self.create_buttons()
 
     # method to reinitialize board based on difficulty
