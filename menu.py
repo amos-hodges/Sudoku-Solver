@@ -26,7 +26,6 @@ class Menu():
         self.button_width = 300
         self.button_height = 50
         self.center_w = self.middle_w - (self.button_width/2)
-        # initialize fonts in game class
         self.click = False
         self.run_display = True
         self.active_color = (200, 200, 200)
@@ -35,8 +34,6 @@ class Menu():
 
         self.click_active = False
         self.choice_active = False
-
-    # need escape key to only quit game from main menu
 
     def check_events(self):
 
@@ -135,8 +132,6 @@ class MainMenu(Menu):
 
 # Enter username / select difficulty
 
-### Still needs: ###
-# -three separate options for difficulty
 
 class DiffMenu(Menu):
     def __init__(self, game):

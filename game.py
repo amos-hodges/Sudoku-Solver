@@ -16,6 +16,7 @@
 
 ### CURRENT BUGS/ISSUES ###
 # -there are cases where there are no direct collisions but the entry is not in the solution, crashes game in both modes
+# -sol: after checking for collisions check if the move is in move_list, entries that are not should be able to be changed
 # -error checking creates collisions with invisible numbers in solve mode
 # -hard board takes too long to generate
 # -font may not be available on all machines
@@ -37,10 +38,27 @@ import random
 # [ ]    -until the window is closed, the program will keep track of how many puzzles are solves, the difficulty and the time for each
 # [ ]    -when the user is done the program will display the stats and highlight the best game
 # [X]   4. if solving sudoku the user can enter numbers on a blank board
+# [ ]    -a toggle before each game if the user would like to use the collision/ wrong move guides
 # [X]    -the display will indicate which row, column or box if an entry has a conflict
 # [X]    -the user can then choose to solve the puzzle one number at a time or all at once
 # [X]    -if solving all at once there will be an animation of the back-tracking alogorithm used
 # [X]   5. a 'play again/solve more' page upon completing a puzzle in either mode
+
+
+# 12/22/22 CURRENT TASK:
+# creating a system so that wrong numbers (either collsions or not in final solution)
+# are entered in a difent color and can be removed at any time
+#
+# Next step is to create a toggle at the begining of each game.
+# if off,
+# the user can enter numbers that collide or do not appear in the final solution,
+# and there will be no indicating if they are wrong
+# if on,
+# the collsioin check will highlight the row/col/box,
+# or indicate a number that is not in the final solution
+#
+# note: the current is_finished only checks that the board is full,
+# so there will need to ba a check that the full board matches the solved board
 
 
 class Grid:
@@ -78,10 +96,6 @@ class Grid:
         for i in range(self.rows):
             for j in range(self.cols):
                 self.squares[i][j].value = 0
-
-    # Eventually: instead of checking if the current move is in the solved solution,
-    # keep track of user moves with a slightly different color and allow them to go back and change the value
-    # write a "hint" functionality using the solve_board function
 
     def place(self, val):
 
@@ -124,6 +138,7 @@ class Grid:
         row, col = self.selected
         if self.squares[row][col].value == 0:
             self.squares[row][col].set_temp(0)
+        # elif (self.squares[row][col].value != 0) and self.wrong_move
 
     def click(self, pos):
         # pygame.mouse.get_pos() returns coordinates relative to the top left corner of the display
@@ -168,6 +183,7 @@ class Grid:
         for i in range(self.rows):
             for j in range(self.cols):
                 self.squares[i][j].draw(win)
+    # highlight row/col/box and the number that causes the collision
 
     def draw_collision(self, win):
         gap = self.width / 9
@@ -226,6 +242,8 @@ class Square:
         self.value = value
         # place holder for penciling in guess
         self.temp = 0
+        # fills in the entry in a different color, can be removed by user
+        self.wrong = 0
         self.row = row
         self.col = col
         # inherit width and height so that squares are scaled to the size of the board
@@ -261,6 +279,9 @@ class Square:
 
     def set_temp(self, val):
         self.temp = val
+
+    def set_wrong(self, val):
+        self.wrong = val
 
 
 class Game():
@@ -381,9 +402,13 @@ class Game():
                     self.key = 8
                 if event.key == pygame.K_9:
                     self.key = 9
+                # clear the space on the board, update the Grid() board model
+                # and the board used for the sudoku functions
                 if event.key == pygame.K_DELETE:
                     self.board.clear()
                     self.key = None
+                    self.board.update_model()
+                    self.board.game_play.update(self.board.board)
                 if event.key == pygame.K_ESCAPE:
                     self.curr_menu = self.main_menu
                     self.playing = False
@@ -392,19 +417,22 @@ class Game():
                     self.board.collision = ['none', (0, 0)]
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
-
+                        # check for row/col/box collision
                         if self.board.squares[i][j].value == 0:
                             self.board.collision = self.board.game_play.get_collision(
                                 self.key, self.board.selected)
 
                         if self.board.collision:
                             self.clash = True
-
+                        # if no collision, attempt to place the number in that square
                         if self.board.place(self.board.squares[i][j].temp):
                             self.clash = False
                             self.board.collision = ['none', (0, 0)]
                             self.board.update_model()
                             self.board.game_play.update(self.board.board)
+                        else:
+                            print('do something here')
+                            self.board.collision = ['none', (0, 0)]
 
                         self.key = None
 
