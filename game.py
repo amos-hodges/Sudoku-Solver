@@ -108,9 +108,10 @@ class Grid:
 
             self.update_model()
             self.game_play.update(self.board)
-            self.game_play.print_board()
+
             if ((row, col), val) in self.game_play.solution_moves:
                 print('correct move')
+                self.squares[row][col].set_wrong(0)
                 self.move_list.append((row, col))
                 self.move_num += 1
                 return True
@@ -154,6 +155,9 @@ class Grid:
         row, col = self.selected
         if self.squares[row][col].value == 0:
             self.squares[row][col].set_temp(0)
+        if self.squares[row][col].wrong != 0:
+            self.squares[row][col].set_temp(0)
+            self.squares[row][col].set_wrong(0)
         # elif (self.squares[row][col].value != 0) and self.wrong_move
 
     def click(self, pos):
@@ -219,6 +223,10 @@ class Grid:
                 win, (255, 0, 0), ((self.collision[1][1]//3)*gap*3, (self.collision[1][0]//3)*gap*3, gap*3, gap*3), 1)
             pygame.draw.rect(
                 win, (255, 0, 0), (self.collision[1][1]*gap, self.collision[1][0]*gap, gap, gap), 4)
+        if self.collision[0] == 'invalid':
+
+            pygame.draw.rect(
+                win, (255, 255, 0), (self.collision[1][1]*gap, self.collision[1][0]*gap, gap, gap), 4)
 
     # gets the row,col & value from the backtracking move list at the current index
 
@@ -247,6 +255,8 @@ class Grid:
         if self.move_num > 0:
             row, col = self.move_list[self.move_num-1]
             self.squares[row][col].value = 0
+            self.squares[row][col].set_temp(0)
+            self.squares[row][col].set_wrong(0)
             self.move_list.pop(self.move_num-1)
             self.move_num -= 1
 
@@ -280,6 +290,14 @@ class Square:
             txt = temp_font.render(str(self.temp), 1, (128, 128, 128))
             # pencil in guess in top left corner of square
             win.blit(txt, (x+5, y+5))
+
+        ######################################################
+        if not (self.wrong == 0):
+            txt = val_font.render(str(self.wrong), 1, (128, 128, 128))
+            # render the value in the center of the square
+            win.blit(txt, (x + (gap/2 - txt.get_width()/2),
+                     y + (gap/2 - txt.get_height()/2)))
+        ######################################################
 
         elif not (self.value == 0):
             txt = val_font.render(str(self.value), 1, (0, 0, 0))
@@ -430,24 +448,49 @@ class Game():
                 if event.key == pygame.K_ESCAPE:
                     self.curr_menu = self.main_menu
                     self.playing = False
+                ######################################################
+                # if event.key == pygame.K_RETURN:
+                #     self.clash = False
+                #     self.board.collision = ['none', (0, 0)]
+                #     i, j = self.board.selected
+                #     if self.board.squares[i][j].temp != 0:
+                #         # check for row/col/box collision
+                #         if self.board.squares[i][j].value == 0:
+                #             self.board.collision = self.board.game_play.get_collision(
+                #                 self.key, self.board.selected)
+
+                #         if self.board.collision:
+                #             self.clash = True
+                #         # if no collision, attempt to place the number in that square
+                #         if self.board.place(self.board.squares[i][j].temp):
+                #             self.clash = False
+                #             self.board.collision = ['none', (0, 0)]
+                #             self.board.update_model()
+                #             self.board.game_play.update(self.board.board)
+
+                #         self.key = None
+                #######################################################
                 if event.key == pygame.K_RETURN:
-                    self.clash = False
-                    self.board.collision = ['none', (0, 0)]
+                    # self.clash = False
+                    # self.board.collision = ['none', (0, 0)]
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
-                        # check for row/col/box collision
-                        if self.board.squares[i][j].value == 0:
-                            self.board.collision = self.board.game_play.get_collision(
-                                self.key, self.board.selected)
 
-                        if self.board.collision:
-                            self.clash = True
-                        # if no collision, attempt to place the number in that square
                         if self.board.place(self.board.squares[i][j].temp):
                             self.clash = False
                             self.board.collision = ['none', (0, 0)]
                             self.board.update_model()
                             self.board.game_play.update(self.board.board)
+
+                        # check for row/col/box collision
+                        if self.board.squares[i][j].value == 0:
+                            self.board.collision = self.board.game_play.get_collision(
+                                self.key, self.board.selected)
+                            self.board.squares[i][j].set_wrong(self.key)
+                            self.board.move_list.append((i, j))
+                            self.board.move_num += 1
+                        if self.board.collision:
+                            self.clash = True
 
                         self.key = None
 
