@@ -18,6 +18,7 @@
 # -there are cases where there are no direct collisions but the entry is not in the solution, crashes game in both modes
 # -sol: after checking for collisions check if the move is in move_list, entries that are not should be able to be changed
 # -error checking creates collisions with invisible numbers in solve mode
+# -in solve mode there needs to be a check for wether the entered numbers have a solution before solve can be clicked
 # -hard board takes too long to generate
 # -font may not be available on all machines
 # -hint button can be pressed while solve is running, causes incorrect solutions in solve mode
@@ -107,17 +108,32 @@ class Grid:
 
             self.update_model()
             self.game_play.update(self.board)
-            if self.game_play.check_valid(val, (row, col)) and self.game_play.solve_board():
+            self.game_play.print_board()
+            if ((row, col), val) in self.game_play.solution_moves:
+                print('correct move')
                 self.move_list.append((row, col))
                 self.move_num += 1
                 return True
 
             else:
+                print('not in solution')
                 self.squares[row][col].set(0)
                 self.squares[row][col].set_temp(0)
                 self.update_model()
                 self.game_play.update(self.board)
                 return False
+
+            # if self.game_play.check_valid(val, (row, col)) and self.game_play.solve_board():
+            #     self.move_list.append((row, col))
+            #     self.move_num += 1
+            #     return True
+
+            # else:
+            #     self.squares[row][col].set(0)
+            #     self.squares[row][col].set_temp(0)
+            #     self.update_model()
+            #     self.game_play.update(self.board)
+            #     return False
 
     def temp_guess(self, val):
         row, col = self.selected
@@ -328,6 +344,8 @@ class Game():
         self.clash = False
 
     def game_loop(self):
+        # get board soltions before running loop
+        self.board.game_play.get_solve_order()
         while self.playing:
             self.check_events()
 
@@ -430,9 +448,6 @@ class Game():
                             self.board.collision = ['none', (0, 0)]
                             self.board.update_model()
                             self.board.game_play.update(self.board.board)
-                        else:
-                            print('do something here')
-                            self.board.collision = ['none', (0, 0)]
 
                         self.key = None
 

@@ -354,5 +354,16 @@ class Sudoku:
 #     b.print_board()
 #     print(b.solution_moves)
 
+#     loop = True
+#     while loop:
+#         mov = input('Enter the move:')
+#         mov = mov.split(',')
+#         mov = [int(x) for x in mov]
+#         mov = ((mov[0], mov[1]), mov[2])
+#         if len(mov) > 0:
+#             loop = False
+
+#     print(mov in b.solution_moves)
+
 
 # main()
