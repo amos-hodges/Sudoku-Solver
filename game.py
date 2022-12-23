@@ -34,7 +34,7 @@ import random
 # End goal:
 
 # [X]   1. allows the user to choose between playing sudoku and entering a puzzle to solve
-# [ ]   2. allows the player to enter their username to keep track of scores/stats
+# [X]   2. allows the player to enter their username
 # [X]   3. if playing sudoku, the user can choose from easy, medium or hard and it will randomly generate
 # [ ]    -until the window is closed, the program will keep track of how many puzzles are solves, the difficulty and the time for each
 # [ ]    -when the user is done the program will display the stats and highlight the best game
@@ -46,9 +46,10 @@ import random
 # [X]   5. a 'play again/solve more' page upon completing a puzzle in either mode
 
 
-# 12/22/22 CURRENT TASK:
-# creating a system so that wrong numbers (either collsions or not in final solution)
-# are entered in a difent color and can be removed at any time
+# 12/23/22 CURRENT TASK:
+# fixing the issue with solve mode with the current place() function
+# -moves neeed to be checked for collisions, but the moves need to be valid otherwise until there are atleast 17
+# numbers on the board, then the solution move list will be updated and the regular error checking will continue
 #
 # Next step is to create a toggle at the begining of each game.
 # if off,
@@ -110,14 +111,12 @@ class Grid:
             self.game_play.update(self.board)
 
             if ((row, col), val) in self.game_play.solution_moves:
-                print('correct move')
                 self.squares[row][col].set_wrong(0)
                 self.move_list.append((row, col))
                 self.move_num += 1
                 return True
 
             else:
-                print('not in solution')
                 self.squares[row][col].set(0)
                 self.squares[row][col].set_temp(0)
                 self.update_model()
@@ -260,6 +259,12 @@ class Grid:
             self.move_list.pop(self.move_num-1)
             self.move_num -= 1
 
+    def update_solve_order(self):
+        if self.selected:
+            row, col = self.selected
+            self.game_play.solution_moves.append(
+                ((row, col), self.squares[row][col].temp))
+
 
 class Square:
 
@@ -362,11 +367,21 @@ class Game():
         self.clash = False
 
     def game_loop(self):
-        # get board soltions before running loop
+        # get board soltions before running loop (needed for place() function to work)
+
         self.board.game_play.get_solve_order()
+        self.clash = False
         while self.playing:
+
             self.check_events()
 
+            # NEed to figure out a away to check for collisions in solve mode, but not check for
+            # moves in solution until there are atleast 17 numbers on the board
+            ################################################################
+            if (self.difficulty == 'Solving') & (self.board.move_num < 17):
+                self.board.update_solve_order()
+                self.clash = False
+            ###############################################################
             if self.solve_clicked:
                 self.board.backtracking_solve()
 
@@ -448,31 +463,9 @@ class Game():
                 if event.key == pygame.K_ESCAPE:
                     self.curr_menu = self.main_menu
                     self.playing = False
-                ######################################################
-                # if event.key == pygame.K_RETURN:
-                #     self.clash = False
-                #     self.board.collision = ['none', (0, 0)]
-                #     i, j = self.board.selected
-                #     if self.board.squares[i][j].temp != 0:
-                #         # check for row/col/box collision
-                #         if self.board.squares[i][j].value == 0:
-                #             self.board.collision = self.board.game_play.get_collision(
-                #                 self.key, self.board.selected)
 
-                #         if self.board.collision:
-                #             self.clash = True
-                #         # if no collision, attempt to place the number in that square
-                #         if self.board.place(self.board.squares[i][j].temp):
-                #             self.clash = False
-                #             self.board.collision = ['none', (0, 0)]
-                #             self.board.update_model()
-                #             self.board.game_play.update(self.board.board)
-
-                #         self.key = None
-                #######################################################
                 if event.key == pygame.K_RETURN:
-                    # self.clash = False
-                    # self.board.collision = ['none', (0, 0)]
+
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
 
