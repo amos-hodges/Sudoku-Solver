@@ -4,33 +4,6 @@
 
 ## Amos Hodges ##
 
-# GUI created using validate and solve functions
-
-### TO DO: ###
-# -time games, record number of hints and wether or not solve was used, number of games at each difficulty
-# -populate a list with the stats for each game played under a specific username
-# -add ability for arrow keys to be used in selecting a box
-# -diagnose/fix bugs
-# -check for unused variables, consolidate and simplify
-
-
-### CURRENT BUGS/ISSUES ###
-# -there are cases where there are no direct collisions but the entry is not in the solution, crashes game in both modes
-# -sol: after checking for collisions check if the move is in move_list, entries that are not should be able to be changed
-# -error checking creates collisions with invisible numbers in solve mode
-# -in solve mode there needs to be a check for wether the entered numbers have a solution before solve can be clicked
-# -hard board takes too long to generate
-# -font may not be available on all machines
-# -hint button can be pressed while solve is running, causes incorrect solutions in solve mode
-# -sol: create a toggle so once solve is click hint does not work
-
-import pygame
-from sudoku import *
-from menu import *
-import time
-import random
-
-
 # End goal:
 
 # [X]   1. allows the user to choose between playing sudoku and entering a puzzle to solve
@@ -46,8 +19,15 @@ import random
 # [X]   5. a 'play again/solve more' page upon completing a puzzle in either mode
 
 
-# 12/23/22 CURRENT TASK:
-# fixing the issue with solve mode with the current place() function
+# 12/29/22 CURRENT TASK:
+# fixing the issue of mode not reseting (new board generating) between solve mode and play mode
+#
+# fixing the issue with the temporary guess not working after the selected square is changed *see current bugs*
+#
+# fixing the issue with place() in solve mode
+# -in solve mode there needs to be continuous check for collisions,
+#  and whether or not the entered numbers have a valid solution
+# as soon as an invalid number or collision is entered it should appear yellow/red just like in solve mode
 # -moves neeed to be checked for collisions, but the moves need to be valid otherwise until there are atleast 17
 # numbers on the board, then the solution move list will be updated and the regular error checking will continue
 #
@@ -61,6 +41,33 @@ import random
 #
 # note: the current is_finished only checks that the board is full,
 # so there will need to ba a check that the full board matches the solved board
+
+
+### CURRENT BUGS/ISSUES ###
+# -going back to a penciled in 'temp' guess causes 'None' to appear in the square instead of the temp_guess
+
+# -if user starts a game, then switched to solve mode
+# and then goes back to play mode without changing the difficulty, the board is blank
+#
+# -in solve mode there needs to be a check for wether the entered numbers have a solution before solve can be clicked
+#
+# -hint button can be pressed while solve is running, causes incorrect solutions in solve mode
+# -sol: create a toggle so once solve is click hint does not work (solved_clicked)
+# -hard board can take a long time to generate
+# -font may not be available on all machines
+
+### TO DO: ###
+# -time games, record number of hints and wether or not solve was used, number of games at each difficulty
+# -populate a list with the stats for each game played under a specific username
+# -add ability for arrow keys to be used in selecting a box
+# -diagnose/fix bugs
+# -check for unused variables, consolidate and simplify
+
+import pygame
+from sudoku import *
+from menu import *
+import time
+import random
 
 
 class Grid:
@@ -368,8 +375,10 @@ class Game():
 
     def game_loop(self):
         # get board soltions before running loop (needed for place() function to work)
-
-        self.board.game_play.get_solve_order()
+        ################################
+        if self.difficulty != 'Solving':
+            ##################################
+            self.board.game_play.get_solve_order()
         self.clash = False
         while self.playing:
 
@@ -379,8 +388,10 @@ class Game():
             # moves in solution until there are atleast 17 numbers on the board
             ################################################################
             if (self.difficulty == 'Solving') & (self.board.move_num < 17):
-                self.board.update_solve_order()
-                self.clash = False
+                #     self.board.game_play.get_solve_order()
+                #     # self.board.update_solve_order()
+                print(self.board.game_play.solution_moves)
+            #     self.clash = False
             ###############################################################
             if self.solve_clicked:
                 self.board.backtracking_solve()
@@ -468,7 +479,7 @@ class Game():
 
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
-
+                        print(self.board.squares[i][j].temp)
                         if self.board.place(self.board.squares[i][j].temp):
                             self.clash = False
                             self.board.collision = ['none', (0, 0)]
@@ -518,6 +529,7 @@ class Game():
                     self.board.undo_move()
 
         if self.board.selected and self.key != None:
+
             self.board.temp_guess(self.key)
 
     def draw_window(self):
@@ -526,7 +538,7 @@ class Game():
         self.create_buttons()
 
     # method to reinitialize board based on difficulty
-
+    # maybe change to 'set_difficulty'
     def get_diff(self):
         self.board = Grid(9, 9, self.display_width,
                           self.display_height, self.difficulty)

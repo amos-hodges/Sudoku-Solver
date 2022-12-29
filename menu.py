@@ -119,14 +119,13 @@ class MainMenu(Menu):
                 self.game.mode = 'playing'
                 self.run_display = False
             if self.solve_puz_btn.collidepoint((mx, my)):
-                # testing other menus, eventually just links to blank board
+
                 self.game.difficulty = 'Solving'
                 self.game.get_diff()
                 self.game.playing = True
-                #self.game.curr_menu = self.game.again_menu
                 self.game.mode = 'solving'
                 self.run_display = False
-                #self.game.playing = True
+                #self.game.board.game_play.solution_moves = []
         self.click = False
 
 
