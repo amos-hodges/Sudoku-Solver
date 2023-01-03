@@ -20,10 +20,7 @@
 
 
 # 12/29/22 CURRENT TASK:
-# fixing the issue of mode not reseting (new board generating) between solve mode and play mode
-#
-#
-#
+
 # fixing the issue with place() in solve mode
 # -in solve mode there needs to be continuous check for collisions,
 #  and whether or not the entered numbers have a valid solution
@@ -45,8 +42,7 @@
 
 ### CURRENT BUGS/ISSUES ###
 
-# -if user starts a game, then switched to solve mode
-# and then goes back to play mode without changing the difficulty, the board is blank
+
 #
 # -in solve mode there needs to be a check for wether the entered numbers have a solution before solve can be clicked
 #
@@ -388,10 +384,12 @@ class Game():
             # NEed to figure out a away to check for collisions in solve mode, but not check for
             # moves in solution until there are atleast 17 numbers on the board
             ################################################################
-            if (self.difficulty == 'Solving') & (self.board.move_num < 17):
-                #     self.board.game_play.get_solve_order()
-                #     # self.board.update_solve_order()
-                print(self.board.game_play.solution_moves)
+            # if (self.difficulty == 'Solving'):
+            #     if (self.board.move_num < 17):
+            #         print(self.board.move_num)
+            #     self.board.game_play.get_solve_order()
+            #     # self.board.update_solve_order()
+            # print(self.board.game_play.solution_moves)
             #     self.clash = False
             ###############################################################
             if self.solve_clicked:
@@ -481,8 +479,30 @@ class Game():
 
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
+                        # attmept to insert functions that only work in solving mode.
+                        # first function checks collisions until 17 moves
+                        # check that there is a valid solution
+                        ################################
+                        if (self.difficulty == 'Solving'):
+                            if (self.board.move_num < 17):
+
+                                if ((i, j), self.board.squares[i][j].temp) not in self.board.game_play.solution_moves:
+
+                                    self.board.game_play.solution_moves.append(
+                                        ((i, j), self.board.squares[i][j].temp))
+
+                                    if self.board.collision:
+                                        self.clash = True
+                                        print(self.board.collision)
+
+                                print(self.board.game_play.solution_moves)
+                            elif (self.board.move_num == 17):
+                                print('checking for valid solution')
+
+                        #########################################
 
                         if self.board.place(self.board.squares[i][j].temp):
+
                             self.clash = False
                             self.board.collision = ['none', (0, 0)]
                             self.board.update_model()
@@ -497,7 +517,6 @@ class Game():
                             if self.board.squares[i][j].wrong != 0:
                                 self.board.collision = self.board.game_play.get_collision(
                                     self.board.squares[i][j].wrong, self.board.selected)
-                            # self.board.squares[i][j].set_wrong(self.key)
 
                             self.board.move_list.append((i, j))
                             self.board.move_num += 1

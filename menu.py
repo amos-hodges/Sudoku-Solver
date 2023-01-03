@@ -144,10 +144,6 @@ class DiffMenu(Menu):
     def create_menu(self):
 
         self.game.window.fill(self.game.grey)
-        # self.game.draw_text('Enter Username:', self.game.small_font, self.game.white,
-        #                     self.game.window, self.middle_w, 100)
-        # self.game.draw_text('Select difficulty:', self.game.small_font, self.game.white,
-        #                     self.game.window, self.middle_w, 240)
         self.draw_messages()
         # username input
         self.usr_input = pygame.Rect(
@@ -243,7 +239,6 @@ class DiffMenu(Menu):
                         self.game.get_diff()
                         self.game.playing = True
                         self.run_display = False
-                        #self.choice_active = False
                     self.game.username = 'guest'
 
         if self.easy_btn.collidepoint((mx, my)):
