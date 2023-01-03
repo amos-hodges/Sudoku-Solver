@@ -22,7 +22,7 @@
 # 12/29/22 CURRENT TASK:
 # fixing the issue of mode not reseting (new board generating) between solve mode and play mode
 #
-# fixing the issue with the temporary guess not working after the selected square is changed *see current bugs*
+#
 #
 # fixing the issue with place() in solve mode
 # -in solve mode there needs to be continuous check for collisions,
@@ -44,7 +44,6 @@
 
 
 ### CURRENT BUGS/ISSUES ###
-# -going back to a penciled in 'temp' guess causes 'None' to appear in the square instead of the temp_guess
 
 # -if user starts a game, then switched to solve mode
 # and then goes back to play mode without changing the difficulty, the board is blank
@@ -126,6 +125,8 @@ class Grid:
             else:
                 self.squares[row][col].set(0)
                 self.squares[row][col].set_temp(0)
+                self.squares[row][col].set_wrong(val)
+
                 self.update_model()
                 self.game_play.update(self.board)
                 return False
@@ -303,19 +304,19 @@ class Square:
             # pencil in guess in top left corner of square
             win.blit(txt, (x+5, y+5))
 
-        ######################################################
-        if not (self.wrong == 0):
+        #######################################################
+        elif not (self.wrong == 0) and self.value == 0:
             txt = val_font.render(str(self.wrong), 1, (128, 128, 128))
             # render the value in the center of the square
             win.blit(txt, (x + (gap/2 - txt.get_width()/2),
                      y + (gap/2 - txt.get_height()/2)))
         ######################################################
-
         elif not (self.value == 0):
+            # print('value')
             txt = val_font.render(str(self.value), 1, (0, 0, 0))
             # render the value in the center of the square
             win.blit(txt, (x + (gap/2 - txt.get_width()/2),
-                     y + (gap/2 - txt.get_height()/2)))
+                           y + (gap/2 - txt.get_height()/2)))
 
         if self.selected:
             pygame.draw.rect(win, (0, 255, 0), (x, y, gap, gap), 3)
@@ -479,7 +480,7 @@ class Game():
 
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
-                        print(self.board.squares[i][j].temp)
+
                         if self.board.place(self.board.squares[i][j].temp):
                             self.clash = False
                             self.board.collision = ['none', (0, 0)]
@@ -488,9 +489,15 @@ class Game():
 
                         # check for row/col/box collision
                         if self.board.squares[i][j].value == 0:
+
                             self.board.collision = self.board.game_play.get_collision(
                                 self.key, self.board.selected)
-                            self.board.squares[i][j].set_wrong(self.key)
+                            #################################################
+                            if self.board.squares[i][j].wrong != 0:
+                                self.board.collision = self.board.game_play.get_collision(
+                                    self.board.squares[i][j].wrong, self.board.selected)
+                            # self.board.squares[i][j].set_wrong(self.key)
+
                             self.board.move_list.append((i, j))
                             self.board.move_num += 1
                         if self.board.collision:
@@ -527,6 +534,7 @@ class Game():
                         pass
                 elif self.undo_btn.collidepoint(pos):
                     self.board.undo_move()
+                    self.clash = False
 
         if self.board.selected and self.key != None:
 
