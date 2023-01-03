@@ -340,7 +340,7 @@ class Game():
         self.running = True
         self.playing = False
         self.mode = 'playing'
-        self.difficulty = 'Easy'
+        self.difficulty = 'Solving'
         self.black, self.white, self.grey, self.dark_grey = (
             0, 0, 0), (255, 255, 255), (128, 128, 128), (80, 80, 80)
         self.blue = (36, 142, 191)
@@ -446,6 +446,7 @@ class Game():
             if event.type == pygame.QUIT:
                 self.running = False
                 self.playing = False
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
                     self.key = 1

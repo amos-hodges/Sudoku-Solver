@@ -45,7 +45,7 @@ class Menu():
                 if event.key == pygame.K_ESCAPE:
                     self.game.curr_menu = self.game.main_menu
                     self.run_display = False
-                    # pygame.quit()
+                    self.click_active = False
 
                 if self.click_active:
 
@@ -115,11 +115,12 @@ class MainMenu(Menu):
 
         if self.click:
             if self.play_game_btn.collidepoint((mx, my)):
+                self.choice_active = False
                 self.game.curr_menu = self.game.diff_menu
                 self.game.mode = 'playing'
                 self.run_display = False
             if self.solve_puz_btn.collidepoint((mx, my)):
-
+                self.choice_active = False
                 self.game.difficulty = 'Solving'
                 self.game.get_diff()
                 self.game.playing = True
@@ -143,10 +144,11 @@ class DiffMenu(Menu):
     def create_menu(self):
 
         self.game.window.fill(self.game.grey)
-        self.game.draw_text('Enter Username:', self.game.small_font, self.game.white,
-                            self.game.window, self.middle_w, 100)
-        self.game.draw_text('Select difficulty:', self.game.small_font, self.game.white,
-                            self.game.window, self.middle_w, 240)
+        # self.game.draw_text('Enter Username:', self.game.small_font, self.game.white,
+        #                     self.game.window, self.middle_w, 100)
+        # self.game.draw_text('Select difficulty:', self.game.small_font, self.game.white,
+        #                     self.game.window, self.middle_w, 240)
+        self.draw_messages()
         # username input
         self.usr_input = pygame.Rect(
             self.center_w, 150, self.button_width, self.button_height)
@@ -182,8 +184,23 @@ class DiffMenu(Menu):
         self.game.draw_text('Hard', self.game.reg_font, self.game.white,
                             self.game.window, self.middle_w, 367)
         # play button
-        self.game.draw_text('Play', self.game.small_font, self.game.white,
+        self.game.draw_text('Play', self.game.small_font, (self.game.white),
                             self.game.window, self.middle_w, 450+(self.button_height/2)-15)
+
+    def draw_messages(self):
+        red = (255, 0, 0)
+        if self.game.username == '':
+            self.game.draw_text('Enter Username:', self.game.small_font, red,
+                                self.game.window, self.middle_w, 100)
+        else:
+            self.game.draw_text('Enter Username:', self.game.small_font, self.game.white,
+                                self.game.window, self.middle_w, 100)
+        if not self.choice_active:
+            self.game.draw_text('Select difficulty:', self.game.small_font, red,
+                                self.game.window, self.middle_w, 240)
+        else:
+            self.game.draw_text('Select difficulty:', self.game.small_font, self.game.white,
+                                self.game.window, self.middle_w, 240)
 
     def set_option_color(self):
         if self.choice_active:
@@ -206,6 +223,8 @@ class DiffMenu(Menu):
 
     def display_menu(self):
         self.run_display = True
+        self.choice_active = False
+        self.game.difficulty = 'Solving'
         while self.run_display:
             self.create_menu()
             self.get_click()
@@ -217,16 +236,16 @@ class DiffMenu(Menu):
         mx, my = pygame.mouse.get_pos()
         if self.play_btn.collidepoint((mx, my)):
             if self.click:
+
                 if self.game.difficulty != 'Solving':
-                    # if self.game.username != '':
+                    if self.game.username != '':
+                        print('Working: play game')
+                        self.game.get_diff()
+                        self.game.playing = True
+                        self.run_display = False
+                        #self.choice_active = False
+                    self.game.username = 'guest'
 
-                    print('Working: play game')
-                    self.game.get_diff()
-                    self.game.playing = True
-                    self.run_display = False
-                # self.game.username = 'player'
-
-        # NEED: click event for setting difficulty
         if self.easy_btn.collidepoint((mx, my)):
             if self.click:
                 self.game.difficulty = 'Easy'
