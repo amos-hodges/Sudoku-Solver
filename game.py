@@ -21,12 +21,6 @@
 
 # 12/29/22 CURRENT TASK:
 
-# fixing the issue with place() in solve mode
-# -in solve mode there needs to be continuous check for collisions,
-#  and whether or not the entered numbers have a valid solution
-# as soon as an invalid number or collision is entered it should appear yellow/red just like in solve mode
-# -moves neeed to be checked for collisions, but the moves need to be valid otherwise until there are atleast 17
-# numbers on the board, then the solution move list will be updated and the regular error checking will continue
 #
 # Next step is to create a toggle at the begining of each game.
 # if off,
@@ -42,12 +36,7 @@
 
 ### CURRENT BUGS/ISSUES ###
 
-
-#
-# -in solve mode there needs to be a check for wether the entered numbers have a solution before solve can be clicked
-#
-# -hint button can be pressed while solve is running, causes incorrect solutions in solve mode
-# -sol: create a toggle so once solve is click hint does not work (solved_clicked)
+# temp guesses penciled in show up as worn in solve mode if the are not entered imediately
 # -hard board can take a long time to generate
 # -font may not be available on all machines
 
@@ -381,17 +370,6 @@ class Game():
 
             self.check_events()
 
-            # NEed to figure out a away to check for collisions in solve mode, but not check for
-            # moves in solution until there are atleast 17 numbers on the board
-            ################################################################
-            # if (self.difficulty == 'Solving'):
-            #     if (self.board.move_num < 17):
-            #         print(self.board.move_num)
-            #     self.board.game_play.get_solve_order()
-            #     # self.board.update_solve_order()
-            # print(self.board.game_play.solution_moves)
-            #     self.clash = False
-            ###############################################################
             if self.solve_clicked:
                 self.board.backtracking_solve()
 
@@ -479,30 +457,40 @@ class Game():
 
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
-                        # attmept to insert functions that only work in solving mode.
-                        # first function checks collisions until 17 moves
-                        # check that there is a valid solution
+
+                        # if in solving mode, the first 17 moves populate the solution moves
+                        # as long as there are no collisions. after 17 moves, the solve order is calculated
+                        # using the existing moves, after which moves that are not in the solution
+                        # will show up in yellow. There are likely edge cases that will cause errors
                         ################################
                         if (self.difficulty == 'Solving'):
                             if (self.board.move_num < 17):
 
                                 if ((i, j), self.board.squares[i][j].temp) not in self.board.game_play.solution_moves:
 
-                                    self.board.game_play.solution_moves.append(
-                                        ((i, j), self.board.squares[i][j].temp))
+                                    if (self.board.squares[i][j].value) == 0:
 
-                                    if self.board.collision:
-                                        self.clash = True
-                                        print(self.board.collision)
+                                        print(self.board.game_play.get_collision(
+                                            self.key, self.board.selected))
 
-                                print(self.board.game_play.solution_moves)
+                                        self.board.game_play.solution_moves.append(
+                                            ((i, j), self.board.squares[i][j].temp))
+
+                                        if (self.board.game_play.get_collision(
+                                                self.key, self.board.selected)) != True:
+                                            self.board.game_play.solution_moves.pop()
+                                            self.board.move_num -= 1
+                                        self.board.update_model()
+                                        self.board.game_play.update(
+                                            self.board.board)
+                                    print(self.board.game_play.solution_moves)
+                                    print(self.board.move_num)
                             elif (self.board.move_num == 17):
                                 print('checking for valid solution')
-
+                                self.board.game_play.get_solve_order()
                         #########################################
 
                         if self.board.place(self.board.squares[i][j].temp):
-
                             self.clash = False
                             self.board.collision = ['none', (0, 0)]
                             self.board.update_model()
@@ -513,13 +501,14 @@ class Game():
 
                             self.board.collision = self.board.game_play.get_collision(
                                 self.key, self.board.selected)
-                            #################################################
+
                             if self.board.squares[i][j].wrong != 0:
                                 self.board.collision = self.board.game_play.get_collision(
                                     self.board.squares[i][j].wrong, self.board.selected)
 
                             self.board.move_list.append((i, j))
                             self.board.move_num += 1
+
                         if self.board.collision:
                             self.clash = True
 
@@ -545,7 +534,7 @@ class Game():
                         self.solve_clicked = True
                         self.key = None
 
-                elif self.mid_butn.collidepoint(pos):
+                elif self.mid_butn.collidepoint(pos) and not self.solve_clicked:
                     # Note: is it possible to call these once instead of every click?
                     self.board.game_play.get_solve_order()
                     self.board.hint_num = [
