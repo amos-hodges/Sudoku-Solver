@@ -148,22 +148,20 @@ class Sudoku:
 
     # same as check_valid to return collision type and coordinate
     def get_collision(self, num, pos):
-        #sel = pos
+
         # check row
         for i in range(len(self.board[0])):
             # check every element in the given row(pos[0]) except the current element (pos[1])
             if self.board[pos[0]][i] == num and pos[1] != i:
-                #print(f'Row collision with {num} at({pos[0]},{i})')
+
                 return ['row', (pos[0], i)]
-                # return False
 
         # check column
         for i in range(len(self.board[0])):
             # check every element in the given column(pos[1]) except the current element (pos[0])
             if self.board[i][pos[1]] == num and pos[0] != i:
-                #print(f'Column collision with {num} at({i},{pos[1]})')
+
                 return ['column', (i, pos[1])]
-                # return False
 
         box_x = pos[1] // 3
         box_y = pos[0] // 3
@@ -173,9 +171,9 @@ class Sudoku:
             for j in range(box_x*3, box_x*3 + 3):
                 # check every element in the given box except the element at i,j
                 if self.board[i][j] == num and (i, j) != pos:
-                    #print(f'Box collision with {num} at({i},{j})')
+
                     return ['box', (i, j)]
-                    # return False
+
         # finally check if the move is in the solution
         if ((pos), num) not in self.solution_moves:
             return ['invalid', (pos[0], pos[1])]

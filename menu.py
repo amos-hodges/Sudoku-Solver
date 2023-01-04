@@ -8,11 +8,8 @@
 
 ### TO DO: ###
 # -finish menu stats page
-# -highlight difficulty selected
-# -make sure user name and difficulty are required to start a game
 # -consolidate redundant methods to the parent class
-# -once game classes are complete make sure selection
-#  & escape sequences are correct
+#
 
 import pygame
 
@@ -34,6 +31,7 @@ class Menu():
 
         self.click_active = False
         self.choice_active = False
+        self.toggle_switch = False
 
     def check_events(self):
 
@@ -121,6 +119,9 @@ class MainMenu(Menu):
                 self.run_display = False
             if self.solve_puz_btn.collidepoint((mx, my)):
                 self.choice_active = False
+                ###########################
+                self.game.guide_mode = True
+                ##########################
                 self.game.difficulty = 'Solving'
                 self.game.get_diff()
                 self.game.playing = True
@@ -140,6 +141,7 @@ class DiffMenu(Menu):
         self.color1 = self.passive_color
         self.color2 = self.passive_color
         self.color3 = self.passive_color
+        self.guide_color = self.passive_color
 
     def create_menu(self):
 
@@ -155,19 +157,29 @@ class DiffMenu(Menu):
             self.middle_w-self.button_width/4, 320, self.button_width/2, self.button_height-15)
         self.hard_btn = pygame.Rect(
             self.middle_w-self.button_width/4, 360, self.button_width/2, self.button_height-15)
+
+        # guide mode toggle
+        self.guide_toggle = pygame.Rect(
+            self.middle_w-self.button_width/4, 435, self.button_width/8, self.button_height-15)
+
         # play button
         self.play_btn = pygame.Rect(
-            self.center_w, 450, self.button_width, self.button_height)
+            self.center_w, 500, self.button_width, self.button_height)
 
         self.get_color()
         self.set_option_color()
+
+        if self.toggle_switch:
+            self.guide_color = self.active_color
+        else:
+            self.guide_color = self.passive_color
 
         pygame.draw.rect(self.game.window, self.curr_color, self.usr_input)
         pygame.draw.rect(self.game.window, self.color1, self.easy_btn)
         pygame.draw.rect(self.game.window, self.color2, self.med_btn)
         pygame.draw.rect(self.game.window, self.color3, self.hard_btn)
         pygame.draw.rect(self.game.window, self.game.dark_grey, self.play_btn)
-
+        pygame.draw.rect(self.game.window, self.guide_color, self.guide_toggle)
         # username input
 
         self.game.draw_text(self.game.username, self.game.misc_font, self.game.blue,
@@ -179,9 +191,12 @@ class DiffMenu(Menu):
                             self.game.window, self.middle_w, 327)
         self.game.draw_text('Hard', self.game.reg_font, self.game.white,
                             self.game.window, self.middle_w, 367)
+        # guide toggle
+        self.game.draw_text('Guide mode', self.game.reg_font, self.game.white,
+                            self.game.window, self.middle_w+15, 445)
         # play button
         self.game.draw_text('Play', self.game.small_font, (self.game.white),
-                            self.game.window, self.middle_w, 450+(self.button_height/2)-15)
+                            self.game.window, self.middle_w, 500+(self.button_height/2)-15)
 
     def draw_messages(self):
         red = (255, 0, 0)
@@ -226,6 +241,9 @@ class DiffMenu(Menu):
             self.get_click()
             self.check_events()
             pygame.display.update()
+    #############################
+    # remove print statements
+    ###########################
 
     def get_click(self):
 
@@ -239,7 +257,8 @@ class DiffMenu(Menu):
                         self.game.get_diff()
                         self.game.playing = True
                         self.run_display = False
-                    self.game.username = 'guest'
+                    else:
+                        self.game.username = 'guest'
 
         if self.easy_btn.collidepoint((mx, my)):
             if self.click:
@@ -256,6 +275,17 @@ class DiffMenu(Menu):
                 self.game.difficulty = 'Hard'
                 self.choice_active = True
                 print('Selected Hard')
+        if self.guide_toggle.collidepoint((mx, my)):
+            if self.click:
+
+                if self.toggle_switch:
+                    self.game.guide_mode = False
+                    self.toggle_switch = False
+                    print('guide mode off')
+                else:
+                    self.game.guide_mode = True
+                    self.toggle_switch = True
+                    print('guide mode on')
 
         if self.click:
             if self.usr_input.collidepoint((mx, my)):
@@ -344,3 +374,60 @@ class AgainMenu(Menu):
                 #self.game.playing = False
 
         self.click = False
+
+
+class Stats(Menu):
+    def __init__(self, game):
+        Menu.__init__(self, game)
+
+    def create_menu(self):
+        self.game.window.fill(self.game.grey)
+
+        self.game.draw_text('Game Stats', self.game.title_font, self.game.white,
+                            self.game.window, self.middle_w, 50)
+        #fill in stats
+        self.display_stats()
+
+        # done button
+        self.done_btn = pygame.Rect(
+            self.middle_w-self.button_width/2, 500, self.button_width, self.button_height)
+
+        pygame.draw.rect(self.game.window, self.curr_color, self.done_btn)
+
+        self.game.draw_text('Done', self.game.small_font, self.game.white,
+                            self.game.window, self.middle_w, 500+(self.button_height/2)-15)
+
+    def display_stats(self):
+        # display username
+        self.game.draw_text('User: '+self.game.username, self.game.small_font, self.game.white,
+                            self.game.window, self.middle_w, 130)
+
+        # games
+        self.game.draw_text('game # | difficulty | time | guide mode | # hints | solve button', self.game.reg_font, self.game.white,
+                            self.game.window, self.middle_w, 165)
+        # format:
+        # Game # | difficulty | time spent | guide mode | hints used | solve btn used
+
+        # *need function to format each ling depending on the width of the string at each index
+        # higlight the best game (shortest > solve used > num hints > guide mode > difficulty)
+        for i in range(len(self.game.stats)):
+            self.game.draw_text(f'{self.game.stats[i][0]}| {self.game.stats[i][1]} | {self.game.stats[i][2]} | {self.game.stats[i][3]} | {self.game.stats[i][4]} | {self.game.stats[i][5]}', self.game.reg_font, self.game.white,
+                                self.game.window, self.middle_w, 185+(20*i+1))
+
+    def get_click(self):
+        mx, my = pygame.mouse.get_pos()
+
+        if self.done_btn.collidepoint((mx, my)):
+            if self.click:
+                print('done')
+                self.game.curr_menu = self.game.again_menu
+                self.run_display = False
+        self.click = False
+
+    def display_menu(self):
+        self.run_display = True
+        while self.run_display:
+            self.create_menu()
+            self.get_click()
+            self.check_events()
+            pygame.display.update()

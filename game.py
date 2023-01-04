@@ -9,48 +9,50 @@
 # [X]   1. allows the user to choose between playing sudoku and entering a puzzle to solve
 # [X]   2. allows the player to enter their username
 # [X]   3. if playing sudoku, the user can choose from easy, medium or hard and it will randomly generate
-# [ ]    -until the window is closed, the program will keep track of how many puzzles are solves, the difficulty and the time for each
+# [X]    -until the window is closed, the program will keep track of how many puzzles are solves, the difficulty and the time for each
 # [ ]    -when the user is done the program will display the stats and highlight the best game
 # [X]   4. if solving sudoku the user can enter numbers on a blank board
-# [ ]    -a toggle before each game if the user would like to use the collision/ wrong move guides
+# [X]    -a toggle before each game if the user would like to use the collision/ wrong move guides
 # [X]    -the display will indicate which row, column or box if an entry has a conflict
 # [X]    -the user can then choose to solve the puzzle one number at a time or all at once
 # [X]    -if solving all at once there will be an animation of the back-tracking alogorithm used
 # [X]   5. a 'play again/solve more' page upon completing a puzzle in either mode
 
 
-# 12/29/22 CURRENT TASK:
+# 1/3/23 CURRENT TASK:
 
+# functions to populate stats page are working correctly
 #
-# Next step is to create a toggle at the begining of each game.
-# if off,
-# the user can enter numbers that collide or do not appear in the final solution,
-# and there will be no indicating if they are wrong
-# if on,
-# the collsioin check will highlight the row/col/box,
-# or indicate a number that is not in the final solution
+# need to create a function that will format the stats
+# in real time depending on the length of the string at each index
 #
-# note: the current is_finished only checks that the board is full,
-# so there will need to ba a check that the full board matches the solved board
+# need to restore the proper menu sequence and decide if solve mode should be included on stats page
 
 
 ### CURRENT BUGS/ISSUES ###
-
-# temp guesses penciled in show up as worn in solve mode if the are not entered imediately
+# -color of wrong guesses needs to be black if guide mode is switched off
+# -temp guesses penciled in show up as wrong in solve mode if the are not entered imediately
+# -the current is_finished only checks that the board is full,
+# so there will need to ba a check that the full board matches the solved board
+# solve board can take a long time, adjust sleep() time depending on difficulty,
+# possibly proportional to the percentage of the board solved?
 # -hard board can take a long time to generate
 # -font may not be available on all machines
 
 ### TO DO: ###
-# -time games, record number of hints and wether or not solve was used, number of games at each difficulty
-# -populate a list with the stats for each game played under a specific username
+
 # -add ability for arrow keys to be used in selecting a box
 # -diagnose/fix bugs
 # -check for unused variables, consolidate and simplify
+
+# maybe:
+# simple data base that stores games for unique usernames, possible to retreive best games
 
 import pygame
 from sudoku import *
 from menu import *
 import time
+import datetime
 import random
 
 
@@ -115,18 +117,6 @@ class Grid:
                 self.update_model()
                 self.game_play.update(self.board)
                 return False
-
-            # if self.game_play.check_valid(val, (row, col)) and self.game_play.solve_board():
-            #     self.move_list.append((row, col))
-            #     self.move_num += 1
-            #     return True
-
-            # else:
-            #     self.squares[row][col].set(0)
-            #     self.squares[row][col].set_temp(0)
-            #     self.update_model()
-            #     self.game_play.update(self.board)
-            #     return False
 
     def temp_guess(self, val):
         row, col = self.selected
@@ -326,6 +316,7 @@ class Game():
         self.playing = False
         self.mode = 'playing'
         self.difficulty = 'Solving'
+
         self.black, self.white, self.grey, self.dark_grey = (
             0, 0, 0), (255, 255, 255), (128, 128, 128), (80, 80, 80)
         self.blue = (36, 142, 191)
@@ -333,7 +324,6 @@ class Game():
         self.reg_font = pygame.font.SysFont('Corbel', 20)
         self.small_font = pygame.font.SysFont('Corbel', 30)
         self.misc_font = pygame.font.SysFont(None, 40)
-
         self.display_width = 540
         self.display_height = 600
         self.display = pygame.Surface(
@@ -348,24 +338,30 @@ class Game():
         self.main_menu = MainMenu(self)
         self.diff_menu = DiffMenu(self)
         self.again_menu = AgainMenu(self)
-        #self.stats_menu = Stats(self)
+        self.stats_menu = Stats(self)
         self.curr_menu = self.main_menu
         self.play_options = ['Undo', 'Hint', 'Solve']
         self.solve_options = ['Undo', 'Step', 'Solve']
 
         self.username = ''
+        self.stats = []
+        self.curr_game = 0
+        self.game_time = 0
+        self.hints_used = 0
         self.key = None
+
+        self.guide_mode = False
 
         self.solve_clicked = False
         self.clash = False
 
     def game_loop(self):
-        # get board soltions before running loop (needed for place() function to work)
-        ################################
+        # get board soltions before starting game(needed for place() function to work)
         if self.difficulty != 'Solving':
-            ##################################
             self.board.game_play.get_solve_order()
+
         self.clash = False
+        start = time.time()
         while self.playing:
 
             self.check_events()
@@ -381,13 +377,23 @@ class Game():
             pygame.display.update()
             # check after last number is updated
             if self.board.is_finished():
+                stop = time.time()
+                self.game_time = time.strftime(
+                    "%M:%S", time.gmtime(stop-start))
                 time.sleep(5)
+                self.curr_game += 1
+                self.update_stats()
+                self.reset_stat_counters()
+
                 self.solve_clicked = False
                 self.board.reset_squares()
-                self.curr_menu = self.again_menu
+
+                self.curr_menu = self.stats_menu
+                #self.curr_menu = self.again_menu
                 self.curr_menu.run_display = True
                 self.playing = False
 
+    # note: should this method be moved to menu.py?
     def draw_text(self, text, font, color, surface, x, y):
         textobj = font.render(text, 1, color)
         text_width = textobj.get_width()
@@ -462,16 +468,13 @@ class Game():
                         # as long as there are no collisions. after 17 moves, the solve order is calculated
                         # using the existing moves, after which moves that are not in the solution
                         # will show up in yellow. There are likely edge cases that will cause errors
-                        ################################
+
                         if (self.difficulty == 'Solving'):
                             if (self.board.move_num < 17):
 
                                 if ((i, j), self.board.squares[i][j].temp) not in self.board.game_play.solution_moves:
 
                                     if (self.board.squares[i][j].value) == 0:
-
-                                        print(self.board.game_play.get_collision(
-                                            self.key, self.board.selected))
 
                                         self.board.game_play.solution_moves.append(
                                             ((i, j), self.board.squares[i][j].temp))
@@ -483,22 +486,21 @@ class Game():
                                         self.board.update_model()
                                         self.board.game_play.update(
                                             self.board.board)
-                                    print(self.board.game_play.solution_moves)
-                                    print(self.board.move_num)
-                            elif (self.board.move_num == 17):
-                                print('checking for valid solution')
-                                self.board.game_play.get_solve_order()
-                        #########################################
 
+                            elif (self.board.move_num == 17):
+
+                                self.board.game_play.get_solve_order()
+
+                        # place the number
                         if self.board.place(self.board.squares[i][j].temp):
                             self.clash = False
                             self.board.collision = ['none', (0, 0)]
                             self.board.update_model()
                             self.board.game_play.update(self.board.board)
 
-                        # check for row/col/box collision
-                        if self.board.squares[i][j].value == 0:
-
+                        # check for row/col/box collision           ############
+                        if self.board.squares[i][j].value == 0 and self.guide_mode:
+                            ##############
                             self.board.collision = self.board.game_play.get_collision(
                                 self.key, self.board.selected)
 
@@ -541,6 +543,7 @@ class Game():
                         *range(len(self.board.game_play.solution_moves))]
                     while self.board.insert_hint():
                         pass
+                    self.hints_used += 1
                 elif self.undo_btn.collidepoint(pos):
                     self.board.undo_move()
                     self.clash = False
@@ -559,6 +562,30 @@ class Game():
     def get_diff(self):
         self.board = Grid(9, 9, self.display_width,
                           self.display_height, self.difficulty)
+
+    def update_stats(self):
+        guided = ''
+        solver = ''
+
+        if self.guide_mode:
+            guided = 'Yes'
+        else:
+            guided = 'No'
+
+        if self.solve_clicked:
+            solver = 'Yes'
+        else:
+            selver = 'No'
+
+        self.stats.append([self.curr_game, self.difficulty, self.game_time,
+                           guided, self.hints_used, solver])
+        # self.stats[self.curr_game] = [self.difficulty, self.game_time,
+        #                               self.guide_mode, self.hints_used, self.solve_clicked]
+        print(self.stats)
+
+    def reset_stat_counters(self):
+        self.game_time = 0
+        self.hints_used = 0
 
 
 def main():
