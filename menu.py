@@ -411,7 +411,8 @@ class Stats(Menu):
         # *need function to format each ling depending on the width of the string at each index
         # higlight the best game (shortest > solve used > num hints > guide mode > difficulty)
         for i in range(len(self.game.stats)):
-            self.game.draw_text(f'{self.game.stats[i][0]}| {self.game.stats[i][1]} | {self.game.stats[i][2]} | {self.game.stats[i][3]} | {self.game.stats[i][4]} | {self.game.stats[i][5]}', self.game.reg_font, self.game.white,
+
+            self.game.draw_text(f'{self.game.stats[i][0]} {self.game.stats[i][1]} {self.game.stats[i][2]} {self.game.stats[i][3]} {self.game.stats[i][4]} {self.game.stats[i][5]}', self.game.reg_font, self.game.white,
                                 self.game.window, self.middle_w, 185+(20*i+1))
 
     def get_click(self):

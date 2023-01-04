@@ -52,7 +52,7 @@ import pygame
 from sudoku import *
 from menu import *
 import time
-import datetime
+
 import random
 
 
@@ -448,8 +448,29 @@ class Game():
                     self.key = 8
                 if event.key == pygame.K_9:
                     self.key = 9
-                # clear the space on the board, update the Grid() board model
-                # and the board used for the sudoku functions
+
+                if self.board.selected:
+                    if event.key == pygame.K_LEFT:
+                        if self.board.selected[1] > 0:
+                            self.board.select(
+                                self.board.selected[0], self.board.selected[1]-1)
+                            self.key = None
+                    if event.key == pygame.K_RIGHT:
+                        if self.board.selected[1] < 8:
+                            self.board.select(
+                                self.board.selected[0], self.board.selected[1]+1)
+                            self.key = None
+                    if event.key == pygame.K_UP:
+                        if self.board.selected[0] > 0:
+                            self.board.select(
+                                self.board.selected[0]-1, self.board.selected[1])
+                            self.key = None
+                    if event.key == pygame.K_DOWN:
+                        if self.board.selected[0] < 8:
+                            self.board.select(
+                                self.board.selected[0]+1, self.board.selected[1])
+                            self.key = None
+
                 if event.key == pygame.K_DELETE:
                     self.board.clear()
                     self.key = None
@@ -498,9 +519,9 @@ class Game():
                             self.board.update_model()
                             self.board.game_play.update(self.board.board)
 
-                        # check for row/col/box collision           ############
+                        # check for row/col/box collision, guide mode toggle
                         if self.board.squares[i][j].value == 0 and self.guide_mode:
-                            ##############
+
                             self.board.collision = self.board.game_play.get_collision(
                                 self.key, self.board.selected)
 
@@ -575,13 +596,10 @@ class Game():
         if self.solve_clicked:
             solver = 'Yes'
         else:
-            selver = 'No'
+            solver = 'No'
 
         self.stats.append([self.curr_game, self.difficulty, self.game_time,
                            guided, self.hints_used, solver])
-        # self.stats[self.curr_game] = [self.difficulty, self.game_time,
-        #                               self.guide_mode, self.hints_used, self.solve_clicked]
-        print(self.stats)
 
     def reset_stat_counters(self):
         self.game_time = 0
