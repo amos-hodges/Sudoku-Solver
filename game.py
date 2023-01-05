@@ -31,8 +31,11 @@
 
 
 ### CURRENT BUGS/ISSUES ###
+# -entering numbers needs to be disabled once solve is clicked
+# -undone entries in solve mode show up as blank squares once solve is clicked
+#
 # -color of wrong guesses needs to be black if guide mode is switched off
-# -temp guesses penciled in show up as wrong in solve mode if the are not entered imediately
+#
 # -the current is_finished only checks that the board is full,
 # so there will need to ba a check that the full board matches the solved board
 # solve board can take a long time, adjust sleep() time depending on difficulty,
@@ -212,8 +215,12 @@ class Grid:
             (row, col), val = self.game_play.current_move[self.solve_idx]
 
             self.squares[row][col].set(val)
+
             time.sleep(.025)
             self.solve_idx += 1
+
+    def get_sleep_time(self):
+        pass
 
     def insert_hint(self):
         self.hint_idx = random.choice(self.hint_num)
@@ -484,7 +491,7 @@ class Game():
                         # will show up in yellow. There are likely edge cases that will cause errors
 
                         if (self.difficulty == 'Solving'):
-                            if (self.board.move_num < 17):
+                            if (self.board.move_num < 17) or len(set(self.board.game_play.solution_moves)) < 17:
 
                                 if ((i, j), self.board.squares[i][j].temp) not in self.board.game_play.solution_moves:
 
@@ -494,15 +501,15 @@ class Game():
                                             ((i, j), self.board.squares[i][j].temp))
 
                                         if (self.board.game_play.get_collision(
-                                                self.key, self.board.selected)) != True:
+                                                self.board.squares[i][j].temp, self.board.selected)) != True:
                                             self.board.game_play.solution_moves.pop()
-                                            self.board.move_num -= 1
+                                            #self.board.move_num -= 1
                                         self.board.update_model()
                                         self.board.game_play.update(
                                             self.board.board)
-
-                            elif (self.board.move_num == 17):
-
+                                print('not safe to solve')
+                            elif (self.board.move_num >= 17) and len(set(self.board.game_play.solution_moves)) >= 17:
+                                print('getting solution')
                                 self.board.game_play.get_solve_order()
 
                         # place the number
@@ -529,7 +536,9 @@ class Game():
                             self.clash = True
 
                         self.key = None
-
+                    print(len(self.board.move_list))
+                    print(self.board.move_num)
+                    print(len(set(self.board.game_play.solution_moves)))
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # left click only
                 if event.button == 1:
