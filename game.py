@@ -10,7 +10,7 @@
 # [X]   2. allows the player to enter their username
 # [X]   3. if playing sudoku, the user can choose from easy, medium or hard and it will randomly generate
 # [X]    -until the window is closed, the program will keep track of how many puzzles are solves, the difficulty and the time for each
-# [ ]    -when the user is done the program will display the stats and highlight the best game
+# [X]    -when the user is done the program will display the stats and highlight the best game
 # [X]   4. if solving sudoku the user can enter numbers on a blank board
 # [X]    -a toggle before each game if the user would like to use the collision/ wrong move guides
 # [X]    -the display will indicate which row, column or box if an entry has a conflict
@@ -19,14 +19,15 @@
 # [X]   5. a 'play again/solve more' page upon completing a puzzle in either mode
 
 
-# 1/3/23 CURRENT TASK:
+# 1/5/23 CURRENT TASK:
 
-# functions to populate stats page are working correctly
-#
-# need to create a function that will format the stats
-# in real time depending on the length of the string at each index
-#
-# need to restore the proper menu sequence and decide if solve mode should be included on stats page
+# game functions like it is supposed to
+#  -solve speed as a function of board completedness
+# -work out existing bugs/edgecases and coninue to diagnose
+# -optimize board generation
+# -clean each file, make sure placement of methods make sense
+# maybe:
+# simple data base that stores games for unique usernames, possible to retreive best games
 
 
 ### CURRENT BUGS/ISSUES ###
@@ -39,14 +40,6 @@
 # -hard board can take a long time to generate
 # -font may not be available on all machines
 
-### TO DO: ###
-
-# -add ability for arrow keys to be used in selecting a box
-# -diagnose/fix bugs
-# -check for unused variables, consolidate and simplify
-
-# maybe:
-# simple data base that stores games for unique usernames, possible to retreive best games
 
 import pygame
 from sudoku import *
@@ -388,8 +381,8 @@ class Game():
                 self.solve_clicked = False
                 self.board.reset_squares()
 
-                self.curr_menu = self.stats_menu
-                #self.curr_menu = self.again_menu
+                #self.curr_menu = self.stats_menu
+                self.curr_menu = self.again_menu
                 self.curr_menu.run_display = True
                 self.playing = False
 
@@ -538,36 +531,38 @@ class Game():
                         self.key = None
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                # click on game board
-                if pos[1] < self.display_width:
-                    clicked = self.board.click(pos)
-                    self.clash = False
-                    if clicked:
-                        self.board.select(clicked[0], clicked[1])
-                        self.key = None
-                # click on buttons
-                elif self.solve_btn.collidepoint(pos):
-                    # prevent solving unless the minimum number is met
-                    if (self.difficulty == 'Solving') and (self.board.move_num < 17):
-                        pass
-                    else:
-                        self.board.solve_idx = 0
-                        self.board.game_play.get_solve_order()
-                        self.solve_clicked = True
-                        self.key = None
+                # left click only
+                if event.button == 1:
+                    pos = pygame.mouse.get_pos()
+                    # click on game board
+                    if pos[1] < self.display_width:
+                        clicked = self.board.click(pos)
+                        self.clash = False
+                        if clicked:
+                            self.board.select(clicked[0], clicked[1])
+                            self.key = None
+                    # click on buttons
+                    elif self.solve_btn.collidepoint(pos):
+                        # prevent solving unless the minimum number is met
+                        if (self.difficulty == 'Solving') and (self.board.move_num < 17):
+                            pass
+                        else:
+                            self.board.solve_idx = 0
+                            self.board.game_play.get_solve_order()
+                            self.solve_clicked = True
+                            self.key = None
 
-                elif self.mid_butn.collidepoint(pos) and not self.solve_clicked:
-                    # Note: is it possible to call these once instead of every click?
-                    self.board.game_play.get_solve_order()
-                    self.board.hint_num = [
-                        *range(len(self.board.game_play.solution_moves))]
-                    while self.board.insert_hint():
-                        pass
-                    self.hints_used += 1
-                elif self.undo_btn.collidepoint(pos):
-                    self.board.undo_move()
-                    self.clash = False
+                    elif self.mid_butn.collidepoint(pos) and not self.solve_clicked:
+                        # Note: is it possible to call these once instead of every click?
+                        self.board.game_play.get_solve_order()
+                        self.board.hint_num = [
+                            *range(len(self.board.game_play.solution_moves))]
+                        while self.board.insert_hint():
+                            pass
+                        self.hints_used += 1
+                    elif self.undo_btn.collidepoint(pos):
+                        self.board.undo_move()
+                        self.clash = False
 
         if self.board.selected and self.key != None:
 
@@ -598,8 +593,8 @@ class Game():
         else:
             solver = 'No'
 
-        self.stats.append([self.curr_game, self.difficulty, self.game_time,
-                           guided, self.hints_used, solver])
+        self.stats.append([str(self.curr_game), self.difficulty, str(self.game_time),
+                           guided, str(self.hints_used), solver])
 
     def reset_stat_counters(self):
         self.game_time = 0

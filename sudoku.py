@@ -7,12 +7,14 @@
 
 ## Sudoku class ##
 # -impements the rules of sudoku
-# -methods to create boards of varying difficulty
 # -methods to solve puzzles and check validity of moves
+# -methods to create boards of varying difficulty
 
-### TO DO: ###
-# -create helper functions for error indicatation
-
+### TO DO ###
+# -remove unused variables
+# attmept to speed up board generation
+# make sure that each function is absolutely necessary (solve_board,check_valid)
+# look for ways to consilidate similar function
 
 import random
 import copy
@@ -31,19 +33,8 @@ class Sudoku:
         self.reset_board()
         self.populate_board()
         self.copy_board = []
-        self.default = [
-            [7, 8, 0, 4, 0, 0, 1, 2, 0],
-            [6, 0, 0, 0, 7, 5, 0, 0, 9],
-            [0, 0, 0, 6, 0, 1, 0, 7, 8],
-            [0, 0, 7, 0, 4, 0, 2, 6, 0],
-            [0, 0, 1, 0, 5, 0, 9, 3, 0],
-            [9, 0, 4, 0, 6, 0, 0, 0, 5],
-            [0, 7, 0, 3, 0, 0, 0, 1, 2],
-            [1, 2, 0, 0, 0, 7, 4, 0, 0],
-            [0, 4, 9, 2, 0, 6, 0, 0, 7]
-        ]
 
-    # testing
+    # for testing execution times
 
     def performance(method):
         def perf_wrapper(*args, **kwargs):
@@ -52,6 +43,23 @@ class Sudoku:
             t2 = time()
             print(f'{method.__name__!r} executed in {(t2-t1):.4f}s')
         return perf_wrapper
+
+    # visual for testing functions without GUI
+
+    def print_board(self):
+        for i in range(len(self.board)):
+            if i % 3 == 0 and i != 0:
+                print("- - - - - - - - - - - - - ")
+            for j in range(len(self.board[0])):
+
+                if j % 3 == 0 and j != 0:
+                    print(" | ", end="")
+                if j == 8:
+                    print(self.board[i][j])
+                else:
+                    print(str(self.board[i][j]) + " ", end="")
+
+    # set the number of squares to remove
 
     def get_board_diff(self):
 
@@ -66,6 +74,8 @@ class Sudoku:
             self.reset_board()
         elif self.difficulty == '':
             print('Error: difficulty not set')
+
+    # recursively solve a given board using backtracking
 
     def solve_board(self):
 
@@ -83,19 +93,19 @@ class Sudoku:
                 self.board[row][col] = i
                 # recursively checks the current board by calling solve_board until check valid returns false
                 # then steps back the the previous iteration
-                #print(f'Current: ({row},{col}) {i}')
 
                 if self.solve_board():
                     return True
                 # resets the empty spot so it can be tried again
                 self.board[row][col] = 0
         return False
-    # same as solve board function, but only run to populate the solve order list.
+
+    # same as solve board function, used populate the solve order list (solution_moves).
 
     def get_solve_order(self):
 
         find = self.find_empty()
-        # board is full if no empty spots are found
+
         if not find:
 
             return True
@@ -112,10 +122,12 @@ class Sudoku:
                 if self.get_solve_order():
                     self.solution_moves.append(((row, col), i))
                     return True
-                # resets the empty spot so it can be tried again
+
                 self.board[row][col] = 0
                 self.current_move.append(((row, col), 0))
         return False
+
+    # check row, col, box for same number
 
     def check_valid(self, num, pos):
 
@@ -147,6 +159,7 @@ class Sudoku:
         return True
 
     # same as check_valid to return collision type and coordinate
+
     def get_collision(self, num, pos):
 
         # check row
@@ -179,22 +192,7 @@ class Sudoku:
             return ['invalid', (pos[0], pos[1])]
         return True
 
-    def print_board(self):
-
-        for i in range(len(self.board)):
-            # prints horizontal line after 3rd and 6th row
-            if i % 3 == 0 and i != 0:
-                print("- - - - - - - - - - - - - ")
-            for j in range(len(self.board[0])):
-                # prints veritcal bar after every 3rd and 6th element in each row
-                if j % 3 == 0 and j != 0:
-                    print(" | ", end="")
-                # last element in each row
-                if j == 8:
-                    print(self.board[i][j])
-                # every other element, emtpy char instead of newline to keep everything on one line
-                else:
-                    print(str(self.board[i][j]) + " ", end="")
+    # return next empty cell
 
     def find_empty(self):
         for i in range(len(self.board)):
@@ -202,6 +200,8 @@ class Sudoku:
                 if self.board[i][j] == 0:
                     return (i, j)
         return None
+
+    # iterates through each cell in a 3x3 box, populating with random numbers
 
     def fill_3x3_box(self, lo, hi):
         l = list(range(1, 10))
@@ -211,12 +211,14 @@ class Sudoku:
                 self.board[row][col] = num
                 l.remove(num)
 
+    # fils the 3x3 boxes on the diagonal for the seed of completed board
+
     def gen_random_seed(self):
         for i in range(9):
             if i % 3 == 0:
                 self.fill_3x3_box(i, i+3)
 
-    # similar to solve except random numbers are tried instead of iterating 1-9
+    # popluates the rest of the seed board by filling in random numbers that are valid and are part of the solution
 
     def gen_full_board(self):
         for row in range(len(self.board)):
@@ -233,6 +235,7 @@ class Sudoku:
                     self.board[row][col] = 0
 
         return False
+
     # same as solve board but takes a starting position
 
     def solve_at_pos(self, row, col):
@@ -246,6 +249,7 @@ class Sudoku:
                 self.board[row][col] = 0
 
         return False
+
     # same as find empty but returns the empty cell specified by n
 
     def find_Nth_empty(self, mod, n):
@@ -257,6 +261,7 @@ class Sudoku:
                         return (row, col)
                     i += 1
         return False
+
     # uses find_nth_empty() and solve_at_pos() to solve from every empty spot on the board
     # generates a list of all different solutions
 
@@ -280,20 +285,16 @@ class Sudoku:
 
         return set(solutions)
 
-    def tuple_to_list(self, li):
-        return list(list(sub for sub in li))
-
-    def return_solutions(self, li):
-        for l in li:
-            l = self.tuple_to_list(l)
-            # comment out
-            self.print_board(l)
+    # remove  a number at a randow row/col
 
     def remove_nums(self, row_col_lo, row_col_hi):
         row = random.randint(row_col_lo, row_col_hi)
         col = random.randint(row_col_lo, row_col_hi)
         if self.board[row][col] != 0:
             self.board[row][col] = 0
+
+    # depending on difficulty, removes a certain number of squares from the full board
+    # after 12 are removed, checks that there is a unique solution for each subsequent removed square
 
     def generate_board(self):
 
@@ -326,44 +327,17 @@ class Sudoku:
                     continue
                 c += 1
 
-        # return filled_board
-    @performance
+    # generates the completed board and then calls generate_board() to remove squares
+    # @performance
     def populate_board(self):
         self.gen_random_seed()
         self.gen_full_board()
-        #print(f'Populating {self.difficulty} board')
         self.generate_board()
 
     def reset_board(self):
         self.board = [[0 for j in range(9)] for i in range(9)]
+
     # keep sudoku class board in sync with grid/game board
 
     def update(self, board_rep):
         self.board = board_rep
-
-
-# test functionality
-
-
-# def main():
-
-#     b = Sudoku('Easy')
-#     b.print_board()
-#     print('\n')
-#     b.get_solve_order()
-#     b.print_board()
-#     print(b.solution_moves)
-
-#     loop = True
-#     while loop:
-#         mov = input('Enter the move:')
-#         mov = mov.split(',')
-#         mov = [int(x) for x in mov]
-#         mov = ((mov[0], mov[1]), mov[2])
-#         if len(mov) > 0:
-#             loop = False
-
-#     print(mov in b.solution_moves)
-
-
-# main()
