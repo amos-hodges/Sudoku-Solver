@@ -19,10 +19,17 @@
 # [X]   5. a 'play again/solve more' page upon completing a puzzle in either mode
 
 
-# 1/5/23 CURRENT TASK:
+# 1/9/23 CURRENT TASK:
 
 # game functions like it is supposed to
-#  -solve speed as a function of board completedness
+# -need to remove appended moves from solution_moves if it is undone
+# -temp vals are increasing move num
+# -issue with solve mode get_solver_order threshold.
+#  Need to make sure the minimum number of enties is guaranteed to be 17+
+# - figure out why squares that have been 'undone' show up blank after the board has been solved
+# -if guide mode is off, wrong guesses need to be black
+#
+#
 # -work out existing bugs/edgecases and coninue to diagnose
 # -optimize board generation
 # -clean each file, make sure placement of methods make sense
@@ -31,17 +38,13 @@
 
 
 ### CURRENT BUGS/ISSUES ###
-# -entering numbers needs to be disabled once solve is clicked
-# -undone entries in solve mode show up as blank squares once solve is clicked
-#
-# -color of wrong guesses needs to be black if guide mode is switched off
+
 #
 # -the current is_finished only checks that the board is full,
 # so there will need to ba a check that the full board matches the solved board
-# solve board can take a long time, adjust sleep() time depending on difficulty,
-# possibly proportional to the percentage of the board solved?
-# -hard board can take a long time to generate
-# -font may not be available on all machines
+#
+# -hard board can take a long time to generate, think about how to optimize
+# -font may not be available on all machines, figure out how to make sure there is a default that looks good.
 
 
 import pygame
@@ -216,7 +219,9 @@ class Grid:
 
             self.squares[row][col].set(val)
 
-            time.sleep(.025)
+            # slow the backtracking proportional to completedness
+            #time.sleep(((row+1)**2 * (col+1)**2)/10000)
+
             self.solve_idx += 1
 
     def get_sleep_time(self):
@@ -364,10 +369,12 @@ class Game():
         start = time.time()
         while self.playing:
 
-            self.check_events()
+            # self.check_events()
 
             if self.solve_clicked:
                 self.board.backtracking_solve()
+            else:
+                self.check_events()
 
             self.draw_window()
 
@@ -562,13 +569,16 @@ class Game():
                             self.key = None
 
                     elif self.mid_butn.collidepoint(pos) and not self.solve_clicked:
-                        # Note: is it possible to call these once instead of every click?
-                        self.board.game_play.get_solve_order()
-                        self.board.hint_num = [
-                            *range(len(self.board.game_play.solution_moves))]
-                        while self.board.insert_hint():
+                        if (self.difficulty == 'Solving') and (self.board.move_num < 17):
                             pass
-                        self.hints_used += 1
+                        else:
+                            # Note: is it possible to call these once instead of every click?
+                            self.board.game_play.get_solve_order()
+                            self.board.hint_num = [
+                                *range(len(self.board.game_play.solution_moves))]
+                            while self.board.insert_hint():
+                                pass
+                            self.hints_used += 1
                     elif self.undo_btn.collidepoint(pos):
                         self.board.undo_move()
                         self.clash = False
