@@ -219,13 +219,7 @@ class Grid:
 
             self.squares[row][col].set(val)
 
-            # slow the backtracking proportional to completedness
-            #time.sleep(((row+1)**2 * (col+1)**2)/10000)
-
             self.solve_idx += 1
-
-    def get_sleep_time(self):
-        pass
 
     def insert_hint(self):
         self.hint_idx = random.choice(self.hint_num)
@@ -509,6 +503,7 @@ class Game():
 
                                         if (self.board.game_play.get_collision(
                                                 self.board.squares[i][j].temp, self.board.selected)) != True:
+                                            print('collision!')
                                             self.board.game_play.solution_moves.pop()
                                             #self.board.move_num -= 1
                                         self.board.update_model()
@@ -543,9 +538,15 @@ class Game():
                             self.clash = True
 
                         self.key = None
-                    print(len(self.board.move_list))
-                    print(self.board.move_num)
-                    print(len(set(self.board.game_play.solution_moves)))
+                    # DEBUG
+                    #######################################################
+                    print('num moves: ' + str(len(self.board.move_list)))
+                    #print('current move: ' + str(self.board.move_num))
+                    print('solution moves: ' +
+                          str(len(self.board.game_play.solution_moves)))
+                    # print('solution moves: ' +
+                    #       str(self.board.game_play.solution_moves))
+                    #######################################################
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # left click only
                 if event.button == 1:
@@ -579,8 +580,18 @@ class Game():
                             while self.board.insert_hint():
                                 pass
                             self.hints_used += 1
+                            self.board.update_model()
+                            self.board.game_play.update(
+                                self.board.board)
                     elif self.undo_btn.collidepoint(pos):
                         self.board.undo_move()
+                        if len(self.board.game_play.solution_moves) > 0 and not self.clash:
+                            self.board.game_play.solution_moves.pop()
+                        self.board.update_model()
+                        self.board.game_play.update(
+                            self.board.board)
+                        print('solution moves after undo: ' +
+                              str(self.board.game_play.solution_moves))
                         self.clash = False
 
         if self.board.selected and self.key != None:
