@@ -17,16 +17,17 @@
 # [X]    -the user can then choose to solve the puzzle one number at a time or all at once
 # [X]    -if solving all at once there will be an animation of the back-tracking alogorithm used
 # [X]   5. a 'play again/solve more' page upon completing a puzzle in either mode
+# [ ]    -option to export/save a solved puzzle in solve mode
 
 
 # 1/9/23 CURRENT TASK:
 
 # game functions like it is supposed to
-# -need to remove appended moves from solution_moves if it is undone
-# -temp vals are increasing move num
-# -issue with solve mode get_solver_order threshold.
-#  Need to make sure the minimum number of enties is guaranteed to be 17+
-# - figure out why squares that have been 'undone' show up blank after the board has been solved
+#
+# -performance issue when drawing numbers during backtracking solve.
+#
+# -add a 'self.solvable' boolean to determine if hint/solve can be used
+#
 # -if guide mode is off, wrong guesses need to be black
 #
 #
@@ -218,7 +219,7 @@ class Grid:
             (row, col), val = self.game_play.current_move[self.solve_idx]
 
             self.squares[row][col].set(val)
-
+            time.sleep(0.0001)
             self.solve_idx += 1
 
     def insert_hint(self):
@@ -235,6 +236,8 @@ class Grid:
     def undo_move(self):
         if self.move_num > 0:
             row, col = self.move_list[self.move_num-1]
+            if self.squares[row][col].wrong == 0:
+                self.game_play.solution_moves.pop()
             self.squares[row][col].value = 0
             self.squares[row][col].set_temp(0)
             self.squares[row][col].set_wrong(0)
@@ -389,7 +392,6 @@ class Game():
                 self.solve_clicked = False
                 self.board.reset_squares()
 
-                #self.curr_menu = self.stats_menu
                 self.curr_menu = self.again_menu
                 self.curr_menu.run_display = True
                 self.playing = False
@@ -423,6 +425,15 @@ class Game():
 
             self.draw_text(options[i//2], self.small_font, self.white,
                            self.window, i*90, self.display_width+15)
+
+    def check_if_solvable(self):
+        try:
+
+            return self.board.game_play.copy_and_solve()
+
+        except:
+            print('error trying to solve')
+            return False
 
     def check_events(self):
         for event in pygame.event.get():
@@ -492,7 +503,7 @@ class Game():
                         # will show up in yellow. There are likely edge cases that will cause errors
 
                         if (self.difficulty == 'Solving'):
-                            if (self.board.move_num < 17) or len(set(self.board.game_play.solution_moves)) < 17:
+                            if (self.board.move_num < 26) or len(set(self.board.game_play.solution_moves)) < 26:
 
                                 if ((i, j), self.board.squares[i][j].temp) not in self.board.game_play.solution_moves:
 
@@ -505,14 +516,21 @@ class Game():
                                                 self.board.squares[i][j].temp, self.board.selected)) != True:
                                             print('collision!')
                                             self.board.game_play.solution_moves.pop()
-                                            #self.board.move_num -= 1
+                                            # self.board.move_num -= 1
                                         self.board.update_model()
                                         self.board.game_play.update(
                                             self.board.board)
-                                print('not safe to solve')
-                            elif (self.board.move_num >= 17) and len(set(self.board.game_play.solution_moves)) >= 17:
-                                print('getting solution')
-                                self.board.game_play.get_solve_order()
+                                print('not safe to solve\n')
+                            elif (self.board.move_num >= 26) and len(set(self.board.game_play.solution_moves)) >= 26:
+
+                                if self.check_if_solvable():
+                                    print('getting solution!\n')
+                                    self.board.game_play.get_solve_order()
+                                else:
+                                    print('no solution to entered puzzle')
+                                    pass
+                                print('total moves in solve: ' +
+                                      str(len(self.board.game_play.current_move)))
 
                         # place the number
                         if self.board.place(self.board.squares[i][j].temp):
@@ -541,9 +559,10 @@ class Game():
                     # DEBUG
                     #######################################################
                     print('num moves: ' + str(len(self.board.move_list)))
-                    #print('current move: ' + str(self.board.move_num))
+                    # print('current move: ' + str(self.board.move_num))
                     print('solution moves: ' +
                           str(len(self.board.game_play.solution_moves)))
+
                     # print('solution moves: ' +
                     #       str(self.board.game_play.solution_moves))
                     #######################################################
@@ -561,7 +580,7 @@ class Game():
                     # click on buttons
                     elif self.solve_btn.collidepoint(pos):
                         # prevent solving unless the minimum number is met
-                        if (self.difficulty == 'Solving') and (self.board.move_num < 17):
+                        if (self.difficulty == 'Solving') and (self.board.move_num < 26):
                             pass
                         else:
                             self.board.solve_idx = 0
@@ -570,7 +589,7 @@ class Game():
                             self.key = None
 
                     elif self.mid_butn.collidepoint(pos) and not self.solve_clicked:
-                        if (self.difficulty == 'Solving') and (self.board.move_num < 17):
+                        if (self.difficulty == 'Solving') and (self.board.move_num < 26):
                             pass
                         else:
                             # Note: is it possible to call these once instead of every click?
@@ -585,13 +604,11 @@ class Game():
                                 self.board.board)
                     elif self.undo_btn.collidepoint(pos):
                         self.board.undo_move()
-                        if len(self.board.game_play.solution_moves) > 0 and not self.clash:
-                            self.board.game_play.solution_moves.pop()
                         self.board.update_model()
                         self.board.game_play.update(
                             self.board.board)
-                        print('solution moves after undo: ' +
-                              str(self.board.game_play.solution_moves))
+                        # print('solution moves after undo: ' +
+                        #       str(self.board.game_play.solution_moves))
                         self.clash = False
 
         if self.board.selected and self.key != None:

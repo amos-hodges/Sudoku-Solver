@@ -341,3 +341,9 @@ class Sudoku:
 
     def update(self, board_rep):
         self.board = board_rep
+
+    def copy_and_solve(self):
+        self.copy_board = copy.deepcopy(self.board)
+        solvable = self.solve_board()
+        self.board = self.copy_board
+        return solvable
