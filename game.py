@@ -23,12 +23,9 @@
 # 1/9/23 CURRENT TASK:
 
 # game functions like it is supposed to
+
 #
-# -performance issue when drawing numbers during backtracking solve.
 #
-# -add a 'self.solvable' boolean to determine if hint/solve can be used
-#
-# -if guide mode is off, wrong guesses need to be black
 #
 #
 # -work out existing bugs/edgecases and coninue to diagnose
@@ -130,7 +127,6 @@ class Grid:
 
         self.squares[row][col].selected = True
         self.selected = (row, col)
-    # deleting temp guess using del key
 
     def clear(self):
 
@@ -140,7 +136,6 @@ class Grid:
         if self.squares[row][col].wrong != 0:
             self.squares[row][col].set_temp(0)
             self.squares[row][col].set_wrong(0)
-        # elif (self.squares[row][col].value != 0) and self.wrong_move
 
     def click(self, pos):
         # pygame.mouse.get_pos() returns coordinates relative to the top left corner of the display
@@ -157,7 +152,6 @@ class Grid:
             return None
 
     def is_finished(self):
-        # check if there are any empty spaces (0's) left on the board
         for i in range(self.rows):
             for j in range(self.cols):
                 if self.squares[i][j].value == 0:
@@ -167,7 +161,6 @@ class Grid:
 
     def draw(self, win):
 
-        # variable to adjust for different size board
         gap = self.width / 9
         for i in range(self.rows+1):
             if i % 3 == 0 and i != 0:
@@ -185,6 +178,7 @@ class Grid:
         for i in range(self.rows):
             for j in range(self.cols):
                 self.squares[i][j].draw(win)
+
     # highlight row/col/box and the number that causes the collision
 
     def draw_collision(self, win):
@@ -219,7 +213,7 @@ class Grid:
             (row, col), val = self.game_play.current_move[self.solve_idx]
 
             self.squares[row][col].set(val)
-            time.sleep(0.0001)
+
             self.solve_idx += 1
 
     def insert_hint(self):
@@ -312,6 +306,10 @@ class Game():
 
     def __init__(self):
         pygame.init()
+
+        self.FPS = 30
+        self.fpsClock = pygame.time.Clock()
+
         pygame.display.set_caption("Sudoku Solver")
 
         self.running = True
@@ -366,8 +364,6 @@ class Game():
         start = time.time()
         while self.playing:
 
-            # self.check_events()
-
             if self.solve_clicked:
                 self.board.backtracking_solve()
             else:
@@ -379,6 +375,8 @@ class Game():
                 self.board.draw_collision(self.window)
 
             pygame.display.update()
+            self.fpsClock.tick(self.FPS)
+
             # check after last number is updated
             if self.board.is_finished():
                 stop = time.time()
@@ -396,7 +394,6 @@ class Game():
                 self.curr_menu.run_display = True
                 self.playing = False
 
-    # note: should this method be moved to menu.py?
     def draw_text(self, text, font, color, surface, x, y):
         textobj = font.render(text, 1, color)
         text_width = textobj.get_width()
@@ -497,10 +494,8 @@ class Game():
                     i, j = self.board.selected
                     if self.board.squares[i][j].temp != 0:
 
-                        # if in solving mode, the first 17 moves populate the solution moves
-                        # as long as there are no collisions. after 17 moves, the solve order is calculated
-                        # using the existing moves, after which moves that are not in the solution
-                        # will show up in yellow. There are likely edge cases that will cause errors
+                        # in solving mode, the first 26 valid moves populate the solution moves
+                        # after 26 moves, the solve order is calculated and board functions normally
 
                         if (self.difficulty == 'Solving'):
                             if (self.board.move_num < 26) or len(set(self.board.game_play.solution_moves)) < 26:
@@ -514,23 +509,21 @@ class Game():
 
                                         if (self.board.game_play.get_collision(
                                                 self.board.squares[i][j].temp, self.board.selected)) != True:
-                                            print('collision!')
+
                                             self.board.game_play.solution_moves.pop()
-                                            # self.board.move_num -= 1
+
                                         self.board.update_model()
                                         self.board.game_play.update(
                                             self.board.board)
-                                print('not safe to solve\n')
+
                             elif (self.board.move_num >= 26) and len(set(self.board.game_play.solution_moves)) >= 26:
 
                                 if self.check_if_solvable():
-                                    print('getting solution!\n')
                                     self.board.game_play.get_solve_order()
-                                else:
-                                    print('no solution to entered puzzle')
-                                    pass
-                                print('total moves in solve: ' +
-                                      str(len(self.board.game_play.current_move)))
+                                # else:
+                                #     pass
+                                # print('total moves in solve: ' +
+                                #       str(len(self.board.game_play.current_move)))
 
                         # place the number
                         if self.board.place(self.board.squares[i][j].temp):
